@@ -30,7 +30,9 @@ pub unsafe extern "system" fn window_proc(hwnd: windef::HWND, uMsg: u32, wParam:
     {
         winuser::WM_CREATE => 
         {
-            //sciterFncLoadFile(hwnd as sciter::types::HWINDOW, Vec"index.htm".chars().collect()));
+            let name: Vec<u16> = "F:\\Projekty\\RUST\\GUI\\Sciter\\ClipboardManager\\src\\index.htm".encode_utf16().collect();
+            sciterFncLoadFile(hwnd as sciter::types::HWINDOW, name.as_ptr());
+
         }
         winuser::WM_CLOSE =>
         {
@@ -79,7 +81,7 @@ pub fn main()
             panic!("DUPA");
         }
         //let frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
-        winuser::ShowWindow(windowHwnd, 0);
+        winuser::ShowWindow(windowHwnd, winuser::SW_RESTORE);
         let mut msg: winuser::MSG = std::mem::zeroed();
 
         while winuser::GetMessageA(&mut msg, null_mut(), 0, 0) > 0 {
