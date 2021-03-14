@@ -9,4 +9,4 @@ edition = "2018"
 [dependencies]
 winapi = { version = "*", features = ["winuser", "minwindef", "libloaderapi"]}
 
-sciter = "*"
+sciter-rs = "0.5.54"

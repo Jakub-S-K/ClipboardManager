@@ -47,15 +47,10 @@ pub unsafe extern "system" fn window_proc(hwnd: windef::HWND, uMsg: u32, wParam:
 
 pub fn main() 
 {
-    let class_name: &[u8] = [b"hohoKlasaGoesBrrr\0"];
+    let class_name: &[u8] = b"hohoKlasaGoesBrrr\0";
     let window_name: &[u8] = b"dupa\0"; 
     unsafe {
-        let mainHinstance: minwindef::HINSTANCE = unsafe{
-            let mut hmodule: minwindef::HINSTANCE = null_mut();
-            let GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS = 0x00000004;
-            libloaderapi::GetModuleHandleExA(libloaderapi::GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, "main".as_ptr() as *const i8, &mut hmodule);
-            hmodule
-        };
+        let mainHinstance: minwindef::HINSTANCE = libloaderapi::GetModuleHandleA(null_mut());
         let mut wc: winuser::WNDCLASSA = std::mem::zeroed();
         wc.hInstance = mainHinstance; 
         wc.lpfnWndProc = Some(window_proc);
@@ -83,7 +78,13 @@ pub fn main()
         {
             panic!("DUPA");
         }
-        let frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
+        //let frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
         winuser::ShowWindow(windowHwnd, 0);
+        let mut msg: winuser::MSG = std::mem::zeroed();
+
+        while winuser::GetMessageA(&mut msg, null_mut(), 0, 0) > 0 {
+            winuser::TranslateMessage(&msg);
+            winuser::DispatchMessageA(&msg);
+        }
     }
 }
