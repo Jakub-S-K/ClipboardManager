@@ -1,7 +1,6 @@
 #![allow(non_snake_case)]
 #![windows_subsystem = "windows"]
 
-mod clipboard_windows;
 extern crate sciter;
 
 use std::error::Error;
