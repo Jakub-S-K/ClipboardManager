@@ -9,6 +9,7 @@ use winapi::um::{libloaderapi, winuser};
 mod windowAlingment;
 use windowAlingment::*;
 
+<<<<<<< HEAD
 static mut dupa:bool = true;
 
 pub fn main() {
@@ -17,6 +18,14 @@ pub fn main() {
         45,
         15_f32,
         43_f32,
+=======
+pub fn main() {
+    let windowAlingment = WINDOWPOS::new(
+        get_desktop_resolution(),
+        35,
+        10_f32,
+        35_f32,
+>>>>>>> e68c11265f94480f12e72cae2310f5e716cf6d0c
         WINDOWALINGMENT::BottomLeft,
     );
 
@@ -25,7 +34,11 @@ pub fn main() {
     let frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
 
     unsafe {
+<<<<<<< HEAD
         winuser::ShowWindow(windowHwnd, winuser::SW_SHOW);
+=======
+        winuser::ShowWindow(windowHwnd, winuser::SW_RESTORE);
+>>>>>>> e68c11265f94480f12e72cae2310f5e716cf6d0c
         let mut msg: winuser::MSG = std::mem::zeroed();
         while winuser::GetMessageA(&mut msg, null_mut(), 0, 0) != 0 {
             winuser::TranslateMessage(&msg);
@@ -112,7 +125,7 @@ pub unsafe extern "system" fn window_proc(
 
     let sciterFncMessageHandle: FncMessageHandlePtr = sciterApiRef.SciterProcND;
     let sciterFncLoadFile: FncLoadFilePtr = sciterApiRef.SciterLoadFile;
-    
+
     let mut handledBySciter: minwindef::BOOL = 0;
     let lResult = sciterFncMessageHandle(
         hwnd as sciter::types::HWINDOW,
@@ -139,6 +152,7 @@ pub unsafe extern "system" fn window_proc(
             winuser::PostQuitMessage(69);
         }
         winuser::WM_CLIPBOARDUPDATE => {
+<<<<<<< HEAD
         if dupa == true{
             winuser::ShowWindow(hwnd, winuser::SW_HIDE);
             dupa = false;
@@ -147,6 +161,9 @@ pub unsafe extern "system" fn window_proc(
             winuser::ShowWindow(hwnd, winuser::SW_SHOW);
             dupa = true;
         }
+=======
+            panic!("Clipboard Ctr-C");
+>>>>>>> e68c11265f94480f12e72cae2310f5e716cf6d0c
         }
         winuser::WM_DISPLAYCHANGE => {
             let (width, height) = get_desktop_resolution();
