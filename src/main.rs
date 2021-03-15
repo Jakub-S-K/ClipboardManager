@@ -6,8 +6,8 @@ extern crate sciter;
 use std::error::Error;
 use std::ptr::null_mut;
 use winapi::shared::{minwindef, windef, ntdef};
-use winapi::um::winuser;
-use winapi::um::libloaderapi;
+use winapi::um::{winuser, libloaderapi, dwmapi, uxtheme};
+use winapi::ctypes;
 
 pub unsafe extern "system" fn window_proc(hwnd: windef::HWND, uMsg: u32, wParam: minwindef::WPARAM, lParam: minwindef::LPARAM) -> minwindef::LRESULT
 {
@@ -66,7 +66,8 @@ pub fn main()
             0,
             class_name.as_ptr() as *const i8,
             window_name.as_ptr() as *const i8,
-            winuser::WS_OVERLAPPEDWINDOW | winuser::WS_VISIBLE,
+            //winuser::WS_OVERLAPPEDWINDOW | winuser::WS_VISIBLE,
+            winuser::WS_POPUP,
             winuser::CW_USEDEFAULT, 
             winuser::CW_USEDEFAULT, 
             winuser::CW_USEDEFAULT, 
@@ -80,7 +81,18 @@ pub fn main()
         {
             panic!("DUPA");
         }
-        //let frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
+
+        let colorToRemove: windef::COLORREF = 0x0000FF00;
+
+        //winuser::SetLayeredWindowAttributes(windowHwnd, colorToRemove, 0 as minwindef::BYTE, 2 | 1);
+        let margin = uxtheme::MARGINS {
+            cxLeftWidth: -1 as ctypes::c_int,
+            cxRightWidth: -1 as ctypes::c_int,
+            cyTopHeight: -1 as ctypes::c_int,
+            cyBottomHeight: -1 as ctypes::c_int,
+        };
+        dwmapi::DwmExtendFrameIntoClientArea(windowHwnd, &margin);
+        let frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
         winuser::ShowWindow(windowHwnd, winuser::SW_RESTORE);
         let mut msg: winuser::MSG = std::mem::zeroed();
 
