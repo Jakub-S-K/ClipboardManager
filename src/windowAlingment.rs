@@ -1,3 +1,5 @@
+#[allow(non_snake_case)]
+
 pub enum WINDOWALINGMENT {
     TopRight,
     BottomRight,

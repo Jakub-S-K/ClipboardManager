@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 winapi = { version = "*", features = ["winuser", "minwindef", "libloaderapi", "windef"]}
 sciter-rs = "0.5.54"
+memory-module-sys = { git = "https://github.com/indygreg/rs-memory-module-sys", branch="main"}
