@@ -2,8 +2,7 @@
 #[allow(non_snake_case)]
 
 extern crate sciter;
-extern crate memory_module_sys; //HOHO trzeba ich wydymać na mamone z tą licencją na statyczne linkowanie, to trzeba dll wczytać z ramu HOHO
-//memory_module_sys::MemoryLoadLibrary(data: &[u8], size: size_t) HEHE include_bytes! goes brrr
+extern crate memory_module_sys;
 
 use std::ptr::null_mut;
 use winapi::shared::{minwindef, windef};
@@ -128,16 +127,17 @@ pub unsafe extern "system" fn windowProc(
     match uMsg {
         winuser::WM_CREATE => {
             
-            (sciterApiRef.SciterSetCallback)(hwnd as sciter::types::HWINDOW, HostCallbackFnc, null_mut());
+            //(sciterApiRef.SciterSetCallback)(hwnd as sciter::types::HWINDOW, HostCallbackFnc, null_mut());
             let binGif = include_bytes!("F:\\Projekty\\RUST\\GUI\\Sciter\\ClipboardManager\\src\\frontend\\data\\someRealShit.gif");
-            let htmlInternalPath: Vec<u16> = String::from("this://data/someRealShit.gif\0").encode_utf16().collect();
-            sciterFncLoadHtml(hwnd as sciter::types::HWINDOW, binGif.as_ptr(), std::mem::size_of_val(binGif) as u32, htmlInternalPath.as_ptr());
-            (sciterApiRef.SciterLoadHtml)(hwnd as sciter::types::HWINDOW, binGif.as_ptr(), std::mem::size_of_val(binGif) as u32, htmlInternalPath.as_ptr());
+            //let htmlInternalPath: Vec<u16> = String::from("this://someRealShit.gif\0").encode_utf16().collect();
+            let htmlInternalPath: Vec<u16> = "F:\\Projekty\\RUST\\GUI\\Sciter\\ClipboardManager\\src\\frontend\\data\\someRealShit.gif".encode_utf16().collect();
+            
+            (sciterApiRef.SciterLoadFile)(hwnd as sciter::types::HWINDOW, htmlInternalPath.as_ptr());
 
             let binHtml = include_bytes!("F:\\Projekty\\RUST\\GUI\\Sciter\\ClipboardManager\\src\\frontend\\index.htm");
             let htmlInternalPath: Vec<u16> = String::from("this://index.htm\0").encode_utf16().collect();
-            sciterFncLoadHtml(hwnd as sciter::types::HWINDOW, binHtml.as_ptr(), std::mem::size_of_val(binHtml) as u32, htmlInternalPath.as_ptr());
-        }//YES Y
+            (sciterApiRef.SciterLoadHtml)(hwnd as sciter::types::HWINDOW, binHtml.as_ptr(), std::mem::size_of_val(binHtml) as u32, htmlInternalPath.as_ptr());
+        }
         winuser::WM_CLOSE => {
             winuser::DestroyWindow(hwnd);
         }
@@ -162,7 +162,7 @@ pub unsafe extern "system" fn windowProc(
     return winuser::DefWindowProcA(hwnd, uMsg, wParam, lParam);
 }
 
-extern "system" fn HostCallbackFnc(scn: sciter::types::LPSCITER_CALLBACK_NOTIFICATION, callbackParam: sciter::types::LPVOID) -> u32
+/*extern "system" fn HostCallbackFnc(scn: sciter::types::LPSCITER_CALLBACK_NOTIFICATION, callbackParam: sciter::types::LPVOID) -> u32
 {
     
     match std::mem::transmute::<u32, sciter::types::SCITER_NOTIFICATION>((*scn).code) //cast from u32 to enum
@@ -178,5 +178,5 @@ extern "system" fn HostCallbackFnc(scn: sciter::types::LPSCITER_CALLBACK_NOTIFIC
         sciter::types::SC
         _ => todo!();
     }
-    todo!();
-}
+    unimplemented!
+}*/
