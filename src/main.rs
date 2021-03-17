@@ -1,9 +1,13 @@
 #[allow(non_snake_case)]
 extern crate memory_module_sys;
+#[macro_use]
 extern crate sciter;
 
 use std::ptr::null_mut;
-use winapi::{shared::{minwindef, windef},um::{libloaderapi, winuser}};
+use winapi::{
+    shared::{minwindef, windef},
+    um::{libloaderapi, winuser},
+};
 
 #[allow(non_snake_case)]
 mod windowAlingment;
@@ -19,7 +23,9 @@ pub fn main() {
         43_f32,
         WINDOWALINGMENT::BottomLeft,
     );
-    let windowHwnd = unsafe { createWindow(windowProc, windowAlingment).expect("Nie udało się stworzyć okna") };
+    let windowHwnd = unsafe {
+        createWindow(windowProc, windowAlingment).expect("Nie udało się stworzyć okna")
+    };
 
     unsafe { winuser::AddClipboardFormatListener(windowHwnd) };
     let frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
@@ -119,8 +125,12 @@ pub unsafe extern "system" fn windowProc(
     }
     match uMsg {
         winuser::WM_CREATE => {
-            ourMessageBoxS(std::env::current_dir().expect("Couldn't yield path").to_str().unwrap());
-            
+            ourMessageBoxS(
+                std::env::current_dir()
+                    .expect("Couldn't yield path")
+                    .to_str()
+                    .unwrap(),
+            );
             //(sciterApiRef.SciterSetCallback)(hwnd as sciter::types::HWINDOW, HostCallbackFnc, null_mut());
             //let binGif = include_bytes!("src\\frontend\\data\\someRealShit.gif");
             //let htmlInternalPath: Vec<u16> = String::from("this://someRealShit.gif\0").encode_utf16().collect();
@@ -165,7 +175,6 @@ unsafe fn ourMessageBox(textToDisplay: String) {
     );
 }
 
-
 #[allow(non_snake_case)]
 unsafe fn ourMessageBoxS(textToDisplay: &str) {
     let mut textToDisplay = String::from(textToDisplay);
@@ -178,7 +187,6 @@ unsafe fn ourMessageBoxS(textToDisplay: &str) {
     );
 }
 
-
 #[allow(non_snake_case)]
 unsafe fn ourMessageBoxU8(textToDisplay: &[u8]) {
     winuser::MessageBoxA(
@@ -189,12 +197,55 @@ unsafe fn ourMessageBoxU8(textToDisplay: &[u8]) {
     );
 }
 
+#[allow(non_snake_case)]
+struct EventHandler
+{
+    root: Option<sciter::Element>,
+}
+
+
+impl Drop for EventHandler
+{
+    fn drop(&mut self)
+    {
+        println!("Droping struct, bye bye life");
+    }
+}
+
+#[allow(non_snake_case)]
+impl EventHandler
+{
+    fn NativeCall(&mut self, arg: String) -> sciter::Value
+    {
+        sciter::Value::from(format!("Rust going brrrrrrrrr {}", arg))
+    }
+    fn sum(&mut self, a: i32, b: i32) -> i32{
+        a+b
+    }
+}
+
+
+impl sciter::EventHandler for EventHandler
+{
+    fn attached(&mut self, root: sciter::HELEMENT)
+    {
+        self.root = Some(sciter::Element::from(root));
+    }
+
+    dispatch_script_call!
+    {
+        fn NativeCall(String);
+        fn sum(i32, i32);
+    }  
+}
+
 /*extern "system" fn HostCallbackFnc(scn: sciter::types::LPSCITER_CALLBACK_NOTIFICATION, callbackParam: sciter::types::LPVOID) -> u32
 {
     match std::mem::transmute::<u32, sciter::types::SCITER_NOTIFICATION>((*scn).code) //cast from u32 to enum
     {
         sciter::types::SCITER_NOTIFICATION::SC_LOAD_DATA =>
         {
+
         }
         sciter::types::SCITER_NOTIFICATION::SC_DATA_LOADED =>
         {
