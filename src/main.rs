@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+#[allow(non_snake_case)]
 extern crate memory_module_sys;
 extern crate sciter;
 
