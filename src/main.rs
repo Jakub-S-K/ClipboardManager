@@ -55,9 +55,6 @@ unsafe fn createWindow(
 ) -> windef::HWND {
     let className: &[u8] = b"rust_clipboard_manager\0";
     let windowName: &[u8] = b"Clipboard Manager\0";
-    ourMessageBoxU8(className);
-    ourMessageBoxU8(windowName);
-    // masz bojowe zadanie, wymyslic ładne nazwy klas i okna. hehe
     let mut windowClass: winuser::WNDCLASSA = std::mem::zeroed();
     windowClass.hInstance = libloaderapi::GetModuleHandleA(null_mut());
     windowClass.lpfnWndProc = Some(windowProcedure);
