@@ -30,8 +30,6 @@ pub fn main() {
             winuser::TranslateMessage(&msg);
             winuser::DispatchMessageA(&msg);
         }
-        let monitorInfo: winuser::MONITORENUMPROC = std::mem::zeroed();
-        winuser::EnumDisplayMonitors(null_mut(), null_mut(), monitorInfo, 0);
     }
 }
 
@@ -131,6 +129,7 @@ pub unsafe extern "system" fn windowProc(
     }
     match uMsg {
         winuser::WM_CREATE => {
+
             match std::env::current_dir() {
                 Ok(dupa) => match dupa.to_str() {
                     Some(text) => {
@@ -149,7 +148,6 @@ pub unsafe extern "system" fn windowProc(
             //let htmlInternalPath: Vec<u16> = String::from("this://someRealShit.gif\0").encode_utf16().collect();
             //let htmlInternalPath: Vec<u16> = "F:\\Projekty\\RUST\\GUI\\Sciter\\ClipboardManager\\src\\frontend\\data\\someRealShit.gif".encode_utf16().collect();
             //(sciterApiRef.SciterLoadFile)(hwnd as sciter::types::HWINDOW, htmlInternalPath.as_ptr());
-
             //let binHtml = include_bytes!("F:\\Projekty\\RUST\\GUI\\Sciter\\ClipboardManager\\src\\frontend\\index.htm");
             //let htmlInternalPath: Vec<u16> = String::from("this://index.htm\0").encode_utf16().collect();
             //(sciterApiRef.SciterLoadHtml)(hwnd as sciter::types::HWINDOW, binHtml.as_ptr(), std::mem::size_of_val(binHtml) as u32, htmlInternalPath.as_ptr());
