@@ -1,12 +1,13 @@
-#![windows_subsystem = "windows"]
+#[allow(non_snake_case)]
 extern crate memory_module_sys;
 extern crate sciter;
 
 use std::ptr::null_mut;
-use winapi::shared::{minwindef, windef};
-use winapi::um::{libloaderapi, winuser};
+use winapi::{shared::{minwindef, windef},um::{libloaderapi, winuser}};
+
 #[allow(non_snake_case)]
 mod windowAlingment;
+
 use windowAlingment::*;
 
 #[allow(non_snake_case)]
@@ -18,7 +19,8 @@ pub fn main() {
         43_f32,
         WINDOWALINGMENT::BottomLeft,
     );
-    let windowHwnd = unsafe { createWindow(windowProc, windowAlingment) };
+    let windowHwnd = unsafe { createWindow(windowProc, windowAlingment).expect("Nie udało się stworzyć okna") };
+
     unsafe { winuser::AddClipboardFormatListener(windowHwnd) };
     let frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
 
@@ -50,7 +52,7 @@ unsafe fn createWindow(
         minwindef::LPARAM,
     ) -> minwindef::LRESULT,
     alignPos: WINDOWPOS,
-) -> windef::HWND {
+) -> Option<windef::HWND> {
     let className: &[u8] = b"rust_clipboard_manager\0";
     let windowName: &[u8] = b"Clipboard Manager\0";
     let mut windowClass: winuser::WNDCLASSA = std::mem::zeroed();
@@ -61,11 +63,11 @@ unsafe fn createWindow(
     if winuser::RegisterClassA(&windowClass) == 0 {
         winuser::MessageBoxA(
             null_mut(),
-            "Failed to register window!\0".as_ptr() as *mut i8,
-            "Error\0".as_ptr() as *mut i8,
+            "Failed to register window!\0".as_ptr() as *const i8,
+            "Error\0".as_ptr() as *const i8,
             winuser::MB_APPLMODAL | winuser::MB_OK,
         );
-        return null_mut();
+        return None;
     }
 
     let (windowPosX, windowPosY) = alignPos.getWindowPos();
@@ -88,9 +90,9 @@ unsafe fn createWindow(
         null_mut(),
     );
     if hwnd != null_mut() {
-        return hwnd;
+        return Some(hwnd);
     } else {
-        return null_mut();
+        return None;
     }
 }
 
@@ -103,18 +105,9 @@ pub unsafe extern "system" fn windowProc(
 ) -> minwindef::LRESULT {
     let sciterApiRef = sciter::SciterAPI();
     //struct holding all adresses of sciterApi function pointers
-    type FncMessageHandlePtr =
-        extern "system" fn(sciter::types::HWINDOW, u32, usize, isize, *mut i32) -> isize; //alias for function pointer type
-    type FncLoadFilePtr = extern "system" fn(
-        sciter::types::HWINDOW,
-        sciter::types::LPCBYTE,
-        u32,
-        sciter::types::LPCWSTR,
-    ) -> minwindef::BOOL;
-    let sciterFncMessageHandle: FncMessageHandlePtr = sciterApiRef.SciterProcND;
-    let sciterFncLoadHtml: FncLoadFilePtr = sciterApiRef.SciterLoadHtml;
+
     let mut handledBySciter: minwindef::BOOL = 0;
-    let lResult = sciterFncMessageHandle(
+    let lResult = (sciterApiRef.SciterProcND)(
         hwnd as sciter::types::HWINDOW,
         uMsg,
         wParam,
@@ -126,19 +119,8 @@ pub unsafe extern "system" fn windowProc(
     }
     match uMsg {
         winuser::WM_CREATE => {
-            match std::env::current_dir() {
-                Ok(dupa) => match dupa.to_str() {
-                    Some(text) => {
-                        ourMessageBoxS(text);
-                    }
-                    None => {
-                        panic!("Couldn't yield path");
-                    }
-                },
-                Err(tak) => {
-                    panic!("Couldn't yield path with error: {}", tak);
-                }
-            }
+            ourMessageBoxS(std::env::current_dir().expect("Couldn't yield path").to_str().unwrap());
+            
             //(sciterApiRef.SciterSetCallback)(hwnd as sciter::types::HWINDOW, HostCallbackFnc, null_mut());
             //let binGif = include_bytes!("src\\frontend\\data\\someRealShit.gif");
             //let htmlInternalPath: Vec<u16> = String::from("this://someRealShit.gif\0").encode_utf16().collect();
@@ -174,6 +156,7 @@ pub unsafe extern "system" fn windowProc(
 
 #[allow(non_snake_case)]
 unsafe fn ourMessageBox(textToDisplay: String) {
+    let textToDisplay = textToDisplay + "\0";
     winuser::MessageBoxA(
         null_mut(),
         textToDisplay.as_ptr() as *const i8,
