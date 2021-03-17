@@ -1,15 +1,15 @@
 #![windows_subsystem = "windows"]
 extern crate memory_module_sys;
-#[allow(non_snake_case)]
 extern crate sciter;
 
 use std::ptr::null_mut;
 use winapi::shared::{minwindef, windef};
 use winapi::um::{libloaderapi, winuser};
+#[allow(non_snake_case)]
 mod windowAlingment;
-use std::env;
 use windowAlingment::*;
 
+#[allow(non_snake_case)]
 pub fn main() {
     let windowAlingment = WINDOWPOS::new(
         getDesktopResolution(),
@@ -35,6 +35,7 @@ pub fn main() {
     }
 }
 
+#[allow(non_snake_case)]
 fn getDesktopResolution() -> (i32, i32) {
     let mut desktopRect: windef::RECT = unsafe { std::mem::zeroed() };
     unsafe { winuser::GetWindowRect(winuser::GetDesktopWindow(), &mut desktopRect) };
@@ -42,6 +43,7 @@ fn getDesktopResolution() -> (i32, i32) {
     (desktopRect.right, desktopRect.bottom)
 }
 
+#[allow(non_snake_case)]
 unsafe fn createWindow(
     windowProcedure: unsafe extern "system" fn(
         windef::HWND,
@@ -53,6 +55,8 @@ unsafe fn createWindow(
 ) -> windef::HWND {
     let className: &[u8] = b"rust_clipboard_manager\0";
     let windowName: &[u8] = b"Clipboard Manager\0";
+    ourMessageBoxU8(className);
+    ourMessageBoxU8(windowName);
     // masz bojowe zadanie, wymyslic ładne nazwy klas i okna. hehe
     let mut windowClass: winuser::WNDCLASSA = std::mem::zeroed();
     windowClass.hInstance = libloaderapi::GetModuleHandleA(null_mut());
@@ -71,7 +75,6 @@ unsafe fn createWindow(
 
     let (windowPosX, windowPosY) = alignPos.getWindowPos();
     let (windowWidth, windowHeight) = alignPos.getSize();
-
     let hwnd = winuser::CreateWindowExA(
         winuser::WS_EX_TOPMOST,
         className.as_ptr() as *const i8,
@@ -96,6 +99,7 @@ unsafe fn createWindow(
     }
 }
 
+#[allow(non_snake_case)]
 pub unsafe extern "system" fn windowProc(
     hwnd: windef::HWND,
     uMsg: u32,
@@ -127,11 +131,10 @@ pub unsafe extern "system" fn windowProc(
     }
     match uMsg {
         winuser::WM_CREATE => {
-            env::current_dir();
-            match env::current_dir() {
+            match std::env::current_dir() {
                 Ok(dupa) => match dupa.to_str() {
                     Some(text) => {
-                        unsafe {ourMessageBoxS(text)};
+                        ourMessageBoxS(text);
                     }
                     None => {
                         panic!("Couldn't yield path");
@@ -175,6 +178,7 @@ pub unsafe extern "system" fn windowProc(
     return winuser::DefWindowProcA(hwnd, uMsg, wParam, lParam);
 }
 
+#[allow(non_snake_case)]
 unsafe fn ourMessageBox(textToDisplay: String) {
     winuser::MessageBoxA(
         null_mut(),
@@ -184,9 +188,22 @@ unsafe fn ourMessageBox(textToDisplay: String) {
     );
 }
 
+
+#[allow(non_snake_case)]
 unsafe fn ourMessageBoxS(textToDisplay: &str) {
     let mut textToDisplay = String::from(textToDisplay);
     textToDisplay += "\0";
+    winuser::MessageBoxA(
+        null_mut(),
+        textToDisplay.as_ptr() as *const i8,
+        "dupa\0".as_ptr() as *const i8,
+        winuser::MB_APPLMODAL | winuser::MB_OK,
+    );
+}
+
+
+#[allow(non_snake_case)]
+unsafe fn ourMessageBoxU8(textToDisplay: &[u8]) {
     winuser::MessageBoxA(
         null_mut(),
         textToDisplay.as_ptr() as *const i8,
