@@ -45,12 +45,18 @@
         </style>
         <script type="text/tiscript">
             $(button#rust).on("click", function() {
-                var rustVal = view.Print();
+                var rustVal = view.print();
                 $(div#rustHOHO).$append(<h1#rustHOHO>{rustVal}</h1><hr />);
             })
         </script>
         <script type="text/javascript">
-                    function writeOutText()
+        function connectInspector() {
+            if( view.connectToInspector ) // the view is in debug mode
+                view.connectToInspector();
+        }
+            
+            
+                function writeOutText()
                 {
                     document.write("Jestem w funkcji i dzialam.");
                 }

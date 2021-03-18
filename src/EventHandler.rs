@@ -4,7 +4,7 @@ pub struct EventHandler {
 
 impl EventHandler {
     fn print(&mut self) -> sciter::Value {
-        sciter::Value::from(println!("Goes brrrrrrrr from Rust"))
+        sciter::Value::from("Goes brrrrrrrr from Rust")
     }
 }
 

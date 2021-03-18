@@ -7,6 +7,6 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-winapi = { version = "*", features = ["winuser", "minwindef", "libloaderapi", "windef"]}
+winapi = { version = "*", features = ["winuser", "minwindef", "libloaderapi", "windef", "wingdi"]}
 sciter-rs = "0.5.54"
 memory-module-sys = { git = "https://github.com/indygreg/rs-memory-module-sys", branch="main"}

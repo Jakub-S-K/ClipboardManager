@@ -6,7 +6,7 @@ extern crate sciter;
 use std::ptr::null_mut;
 use winapi::{
     shared::{minwindef, windef},
-    um::{libloaderapi, winuser},
+    um::{libloaderapi, winuser, wingdi},
 };
 
 #[allow(non_snake_case)]
@@ -19,6 +19,8 @@ static archive: &[u8] = include_bytes!("../dupa.rc");
 
 #[allow(non_snake_case)]
 pub fn main() {
+    sciter::set_options(sciter::RuntimeOptions::DebugMode(true));
+
     let windowAlingment = WINDOWPOS::new(
         getDesktopResolution(),
         45,
@@ -29,7 +31,6 @@ pub fn main() {
     let windowHwnd = unsafe {
         createWindow(windowProc, windowAlingment).expect("Nie udało się stworzyć okna")
     };
-
     unsafe { winuser::AddClipboardFormatListener(windowHwnd) };
     let mut frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
     let eventcos = EventHandler::EventHandler{root:None};
@@ -85,7 +86,7 @@ unsafe fn createWindow(
     let (windowPosX, windowPosY) = alignPos.getWindowPos();
     let (windowWidth, windowHeight) = alignPos.getSize();
     let hwnd = winuser::CreateWindowExA(
-        winuser::WS_EX_TOPMOST,
+         winuser::WS_EX_TOPMOST,
         className.as_ptr() as *const i8,
         windowName.as_ptr() as *const i8,
         //winuser::WS_EX_LAYERED | winuser::WS_EX_TRANSPARENT | winuser::WS_EX_TOPMOST,
@@ -102,6 +103,8 @@ unsafe fn createWindow(
         null_mut(),
     );
     if hwnd != null_mut() {
+        //let 
+        //winuser::SetLayeredWindowAttributes(hwnd, )
         return Some(hwnd);
     } else {
         return None;
@@ -132,7 +135,6 @@ pub unsafe extern "system" fn windowProc(
     match uMsg {
         winuser::WM_CREATE => {
             //ourMessageBoxS(std::env::current_dir().expect("Couldn't yield path").to_str().unwrap());
-            
             //(sciterApiRef.SciterSetCallback)(hwnd as sciter::types::HWINDOW, HostCallbackFnc, null_mut());
             //let binGif = include_bytes!("src\\frontend\\data\\someRealShit.gif");
             //let htmlInternalPath: Vec<u16> = String::from("this://someRealShit.gif\0").encode_utf16().collect();
