@@ -29,7 +29,7 @@ pub fn main() {
     };
     unsafe { windowHandle.hookClipboardListener() };
     let mut frame = sciter::Window::attach(windowHandle.getHWND() as sciter::types::HWINDOW);
-    let eventcos = EventHandler::EventHandler { root: None };
+    let eventcos = EventHandler::EventHandler { root: None, number:2};
     frame.event_handler(eventcos);
     frame.archive_handler(archive).unwrap();
     //frame.load_html(binHtml, Some("this://app/index.htm"));

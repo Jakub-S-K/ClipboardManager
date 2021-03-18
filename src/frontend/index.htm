@@ -1,81 +1,94 @@
 <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body{
-                margin:0px;
-            }
-            .container {
-                background-color: #000000be;
-                border-radius: 12px 12px 0px 0px;
-                color: whitesmoke; 
-                height: 100%;
-                width: 100%;
-                margin:0px;
-            }
-            #upperBox{
-                text-align: center;
-                justify-content: center;
-                height:13%;
-                position: relative;
-            }
-            #midBox{
-                padding-left:10%;
-                padding-top:2%;
-                justify-content: left;
-                height:70%;
-                background-color: rgba(255, 255, 255, 0.5)
-            }
-            hr {
-                border: 1px solid rgb(255, 115, 0);
-                width:85%;
-            }
-            #nacisk{
-                background-color: sandybrown;
-                color:white;
-                width:40%;
-            }
-            #footer{
-                color:rgba(255, 115, 0, 0.562);
-                text-align: right;
-                padding-right: 3%;
-                font-style: italic;
-            }
-           
-        </style>
-        <script type="text/tiscript">
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            margin: 0px;
+        }
+
+        .container {
+            background-color: #000000be;
+            border-radius: 12px 12px 0px 0px;
+            color: whitesmoke;
+            height: 100%;
+            width: 100%;
+            margin: 0px;
+        }
+
+        #upperBox {
+            text-align: center;
+            justify-content: center;
+            height: 13%;
+            position: relative;
+        }
+
+        #midBox {
+            padding-left: 10%;
+            padding-top: 2%;
+            justify-content: left;
+            height: 70%;
+            background-color: rgba(226, 186, 186, 0.5);
+        }
+
+        hr {
+            border: 1px solid rgb(255, 115, 0);
+            width: 85%;
+        }
+
+        #nacisk {
+            background-color: sandybrown;
+            color: rgb(192, 32, 32);
+            width: 40%;
+        }
+
+        #footer {
+            color: rgba(255, 115, 0, 0.562);
+            text-align: right;
+            padding-right: 3%;
+            font-style: italic;
+        }
+    </style>
+    <script type="text/tiscript">
             $(button#rust).on("click", function() {
                 var rustVal = view.print();
                 $(div#rustHOHO).$append(<h1#rustHOHO>{rustVal}</h1><hr />);
             })
         </script>
-        <script type="text/javascript">
+    <script type="text/tiscript">
         function connectInspector() {
-            if( view.connectToInspector ) // the view is in debug mode
+            if (view.connectToInspector) // the view is in debug mode
                 view.connectToInspector();
         }
-            
-            
-                function writeOutText()
-                {
-                    document.write("Jestem w funkcji i dzialam.");
-                }
-            //writeOutText();
-        </script>
-    </head>
-    <body>
+        $(button#nacisk).on("click", function() {
+            dupa();
+        });
+        
+        function dupa()
+        {
+            $(div#midBox).$append(<h1#takCzemuPytasz>{view.add()}</h1><hr />);
+        }
+
+
+    </script>
+</head>
+
+<body>
     <div class="container">
         <div id="upperBox">
             <div id="rustHOHO">
-                <button #rust>Przycisk</button>            
+                <button #rust>Przycisk</button>
             </div>
         </div>
         <hr>
         <div id="midBox">
-            <button onclick="writeOutText();" id="nacisk">Naciś</button>
+            <button #nacisk>Nacis</button>
         </div>
-        <hr>        
-        <div id="footer"><p>Conceptual design preview.</p></div>
+        <hr>
+        <div id="footer">
+            <p>Conceptual design preview.</p>
+        </div>
     </div>
-    </body>
+</body>
+
 </html>
