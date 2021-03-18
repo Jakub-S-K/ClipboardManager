@@ -14,7 +14,6 @@ mod windowAlingment;
 
 use windowAlingment::*;
 
-
 static archive: &[u8] = include_bytes!("../dupa.rc");
 
 #[allow(non_snake_case)]
