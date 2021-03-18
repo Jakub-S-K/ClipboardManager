@@ -14,13 +14,14 @@
             }
             hr {
                 border: 2px solid red;
+
                 background-color: red;
             }
            
         </style>
         <script type="text/tiscript">
             $(button#rust).on("click", function() {
-                var rustVal = view.NativeCall("sum");
+                var rustVal = view.Print();
                 $(div#rustHOHO).$append(<h1#rustHOHO>{rustVal}</h1><hr />);
             })
         </script>
