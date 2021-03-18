@@ -2,20 +2,44 @@
     <head>
         <meta charset="utf-8">
         <style>
-            body {
-                color: black; 
-                height: auto;
-                width: auto;
+            body{
+                margin:0px;
             }
-            div{
-                margin: auto;
+            .container {
+                background-color: #000000be;
+                border-radius: 12px 12px 0px 0px;
+                color: whitesmoke; 
+                height: 100%;
+                width: 100%;
+                margin:0px;
+            }
+            #upperBox{
                 text-align: center;
                 justify-content: center;
+                height:13%;
+                position: relative;
+            }
+            #midBox{
+                padding-left:10%;
+                padding-top:2%;
+                justify-content: left;
+                height:70%;
+                background-color: rgba(255, 255, 255, 0.5)
             }
             hr {
-                border: 2px solid red;
-
-                background-color: red;
+                border: 1px solid rgb(255, 115, 0);
+                width:85%;
+            }
+            #nacisk{
+                background-color: sandybrown;
+                color:white;
+                width:40%;
+            }
+            #footer{
+                color:rgba(255, 115, 0, 0.562);
+                text-align: right;
+                padding-right: 3%;
+                font-style: italic;
             }
            
         </style>
@@ -26,7 +50,13 @@
             })
         </script>
         <script type="text/javascript">
-                    function writeOutText()
+        function connectInspector() {
+            if( view.connectToInspector ) // the view is in debug mode
+                view.connectToInspector();
+        }
+            
+            
+                function writeOutText()
                 {
                     document.write("Jestem w funkcji i dzialam.");
                 }
@@ -34,10 +64,18 @@
         </script>
     </head>
     <body>
-        <div id="rustHOHO">
-            <button #rust>Przycisk</button>            
+    <div class="container">
+        <div id="upperBox">
+            <div id="rustHOHO">
+                <button #rust>Przycisk</button>            
+            </div>
         </div>
-        <button onclick="writeOutText();">Naciś</button>
-        <div id="dupa">F</div>
+        <hr>
+        <div id="midBox">
+            <button onclick="writeOutText();" id="nacisk">Naciś</button>
+        </div>
+        <hr>        
+        <div id="footer"><p>Conceptual design preview.</p></div>
+    </div>
     </body>
 </html>
