@@ -28,8 +28,9 @@ pub fn main() {
     };
 
     unsafe { winuser::AddClipboardFormatListener(windowHwnd) };
-    let frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
-
+    let mut frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
+    let eventcos = EventHandler{root:None};
+    frame.event_handler(eventcos);
     //frame.load_html(binHtml, Some("this://main.htm"));
     unsafe {
         winuser::ShowWindow(windowHwnd, winuser::SW_SHOW);
@@ -223,7 +224,6 @@ impl EventHandler
         a+b
     }
 }
-
 
 impl sciter::EventHandler for EventHandler
 {
