@@ -210,7 +210,7 @@ impl Drop for EventHandler
 {
     fn drop(&mut self)
     {
-        println!("Droping struct, bye bye life");
+        unsafe {ourMessageBoxS("Droping struct, bye bye life")};
     }
 }
 

@@ -1,5 +1,6 @@
 <html>
     <head>
+        <meta charset="utf-8">
         <style>
             body {
                 color: black; 
@@ -8,10 +9,16 @@
             }
            
         </style>
+        <script type="text/tiscript">
+            $(button#rust).on("click", function() {
+                var rustVal = view.NativeCall("sum");
+                $(div).$append(<h1#rustHOHO>hoho wartość z POTĘŻŃEGO backendu {rustVal}</h1>);
+            })
+        </script>
     </head>
     <body>
-        <img src="data/someRealShit.gif" height="200" width="150">        
-        <h1>DUPA a teraz daj mi spokój</h1>
+        <button #rust>Przycisk</button>
+        <div id="rustHOHO"></div>
         <hr />
     </body>
-</html
+</html>
