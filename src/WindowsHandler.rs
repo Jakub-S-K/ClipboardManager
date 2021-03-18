@@ -165,6 +165,7 @@ impl WindowPos {
             percentileOffsetWidth: offsetWidth,
         };
     }
+    /// return offset X then offset Y
     fn getWindowPos(&self) -> (i32, i32) {
         match self.alignment {
             WINDOWALINGMENT::BottomRight => {
