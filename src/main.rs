@@ -86,7 +86,7 @@ unsafe fn createWindow(
     let (windowPosX, windowPosY) = alignPos.getWindowPos();
     let (windowWidth, windowHeight) = alignPos.getSize();
     let hwnd = winuser::CreateWindowExA(
-         winuser::WS_EX_TOPMOST,
+        winuser::WS_EX_LAYERED | winuser::WS_EX_TOPMOST,
         className.as_ptr() as *const i8,
         windowName.as_ptr() as *const i8,
         //winuser::WS_EX_LAYERED | winuser::WS_EX_TRANSPARENT | winuser::WS_EX_TOPMOST,
@@ -103,8 +103,7 @@ unsafe fn createWindow(
         null_mut(),
     );
     if hwnd != null_mut() {
-        //let 
-        //winuser::SetLayeredWindowAttributes(hwnd, )
+        winuser::SetLayeredWindowAttributes(hwnd, wingdi::RGB(255_u8, 255_u8, 255_u8), 255, winuser::LWA_ALPHA | winuser::LWA_COLORKEY);
         return Some(hwnd);
     } else {
         return None;
