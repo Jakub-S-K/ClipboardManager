@@ -14,6 +14,9 @@ mod windowAlingment;
 
 use windowAlingment::*;
 
+
+static archive: &[u8] = include_bytes!("../dupa.rc");
+
 #[allow(non_snake_case)]
 pub fn main() {
     let windowAlingment = WINDOWPOS::new(
@@ -31,7 +34,9 @@ pub fn main() {
     let mut frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
     let eventcos = EventHandler{root:None};
     frame.event_handler(eventcos);
-    //frame.load_html(binHtml, Some("this://main.htm"));
+    frame.archive_handler(archive).unwrap();
+    //frame.load_html(binHtml, Some("this://app/index.htm"));
+    frame.load_file("this://app/index.htm");
     unsafe {
         winuser::ShowWindow(windowHwnd, winuser::SW_SHOW);
         let mut msg: winuser::MSG = std::mem::zeroed();
@@ -126,12 +131,8 @@ pub unsafe extern "system" fn windowProc(
     }
     match uMsg {
         winuser::WM_CREATE => {
-            ourMessageBoxS(
-                std::env::current_dir()
-                    .expect("Couldn't yield path")
-                    .to_str()
-                    .unwrap(),
-            );
+            //ourMessageBoxS(std::env::current_dir().expect("Couldn't yield path").to_str().unwrap());
+            
             //(sciterApiRef.SciterSetCallback)(hwnd as sciter::types::HWINDOW, HostCallbackFnc, null_mut());
             //let binGif = include_bytes!("src\\frontend\\data\\someRealShit.gif");
             //let htmlInternalPath: Vec<u16> = String::from("this://someRealShit.gif\0").encode_utf16().collect();
