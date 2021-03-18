@@ -235,8 +235,8 @@ impl sciter::EventHandler for EventHandler
 
     dispatch_script_call!
     {
-        fn NativeCall(String);
-        fn sum(i32, i32);
+        fn NativeCall(String); // -> sctire::Value
+        fn sum(i32, i32); // -> i32
     }  
 }
 
