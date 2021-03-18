@@ -1,19 +1,15 @@
-#[allow(non_snake_case)]
 extern crate memory_module_sys;
 #[macro_use]
 extern crate sciter;
 
 use std::ptr::null_mut;
-use winapi::{
-    shared::{minwindef, windef},
-    um::{libloaderapi, wingdi, winuser},
-};
 
 #[allow(non_snake_case)]
-mod EventHandler;
+mod Event;
+use Event::*;
 #[allow(non_snake_case)]
-mod WindowsHandler;
-use WindowsHandler::*;
+mod Windows;
+use Windows::*;
 
 static archive: &[u8] = include_bytes!("../dupa.rc");
 
@@ -29,7 +25,7 @@ pub fn main() {
     };
     unsafe { windowHandle.hookClipboardListener() };
     let mut frame = sciter::Window::attach(windowHandle.getHWND() as sciter::types::HWINDOW);
-    let eventcos = EventHandler::EventHandler { root: None, number:2};
+    let eventcos = EventHandler { root: None, number:2};
     frame.event_handler(eventcos);
     frame.archive_handler(archive).unwrap();
     //frame.load_html(binHtml, Some("this://app/index.htm"));
