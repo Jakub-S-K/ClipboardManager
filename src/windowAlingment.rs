@@ -7,7 +7,7 @@ pub enum WINDOWALINGMENT {
     TopLeft,
 }
 
-pub struct WINDOWPOS {
+pub struct WindowPos {
     screen_width: i32,
     screen_height: i32,
     offsetFromBorders: i32,
@@ -16,7 +16,7 @@ pub struct WINDOWPOS {
     alingment: WINDOWALINGMENT,
 }
 
-impl WINDOWPOS {
+impl WindowPos {
     pub fn new(
         (w, h): (i32, i32),
         borderOffset: i32,
@@ -24,7 +24,7 @@ impl WINDOWPOS {
         offsetHeight: f32,
         aling: WINDOWALINGMENT,
     ) -> Self {
-        return Self {
+        return WindowPos {
             alingment: aling,
             screen_height: h,
             screen_width: w,
