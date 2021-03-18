@@ -7,18 +7,27 @@
                 height: auto;
                 width: auto;
             }
+            div{
+                margin: auto;
+                text-align: center;
+                justify-content: center;
+            }
+            hr {
+                border: 2px solid red;
+                background-color: red;
+            }
            
         </style>
         <script type="text/tiscript">
             $(button#rust).on("click", function() {
                 var rustVal = view.NativeCall("sum");
-                $(div).$append(<h1#rustHOHO>hoho wartość z POTĘŻŃEGO backendu {rustVal}</h1>);
+                $(div#rustHOHO).$append(<h1#rustHOHO>{rustVal}</h1><hr />);
             })
         </script>
     </head>
     <body>
-        <button #rust>Przycisk</button>
-        <div id="rustHOHO"></div>
-        <hr />
+        <div id="rustHOHO">
+            <button #rust>Przycisk</button>
+        </div>
     </body>
 </html>
