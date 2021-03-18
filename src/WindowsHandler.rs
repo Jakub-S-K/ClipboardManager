@@ -6,25 +6,25 @@ use winapi::{
 
 extern crate sciter;
 
-pub struct WinHandle {
+pub struct WinHandler {
     hwnd: windef::HWND,
 }
 
-impl WinHandle {
-    pub unsafe fn new(className: &[u8], windowName: &[u8], (x, y): (i32, i32)) -> Self {
+impl WinHandler {
+    pub unsafe fn new(className: &[u8], windowName: &[u8], windowPos: WindowPos) -> Self {
         let mut windowClass: winuser::WNDCLASSA;
         windowClass = std::mem::zeroed();
         windowClass.hInstance = libloaderapi::GetModuleHandleA(null_mut());
 
-        windowClass.lpfnWndProc = Some(WinHandle::windowProcedure);
+        windowClass.lpfnWndProc = Some(WinHandler::windowProcedure);
         windowClass.lpszClassName = className.as_ptr() as *const _;
         if winuser::RegisterClassA(&windowClass) == 0 {
-            WinHandle::messageBox(String::from("Failed to register class"));
+            WinHandler::messageBox(String::from("Failed to register class"));
             panic!();
         }
-        let (width, height) = WinHandle::getDesktopResolution();
+        let (width, height) = windowPos.getSize();
         let tempHWND: windef::HWND;
-
+        let (x, y) = windowPos.getWindowPos();
         tempHWND = winuser::CreateWindowExA(
             winuser::WS_EX_LAYERED | winuser::WS_EX_TOPMOST,
             className.as_ptr() as *const _,
@@ -40,7 +40,7 @@ impl WinHandle {
             null_mut(),
         );
         if tempHWND == null_mut() {
-            WinHandle::messageBox(String::from("Failed to create window"));
+            WinHandler::messageBox(String::from("Failed to create window"));
         }
         winuser::SetLayeredWindowAttributes(
             tempHWND,
@@ -48,15 +48,15 @@ impl WinHandle {
             255,
             winuser::LWA_ALPHA | winuser::LWA_COLORKEY,
         );
-        return Self { hwnd: tempHWND };
+        return WinHandler { hwnd: tempHWND };
     }
-    fn getHWND(&self) -> windef::HWND {
+    pub fn getHWND(&self) -> windef::HWND {
         self.hwnd
     }
-    fn getDesktopResolution() -> (i32, i32) {
+    /// returns first width then height
+    pub fn getDesktopResolution() -> (i32, i32) {
         let mut desktopRect: windef::RECT = unsafe { std::mem::zeroed() };
         unsafe { winuser::GetWindowRect(winuser::GetDesktopWindow(), &mut desktopRect) };
-        // width, height
         (desktopRect.right, desktopRect.bottom)
     }
     pub unsafe fn messageBox(textToDisplay: String) {
@@ -110,23 +110,105 @@ impl WinHandle {
                 winuser::ShowWindow(hwnd, winuser::SW_SHOW);
             }
             winuser::WM_DISPLAYCHANGE => {
-                let (width, height) = WinHandle::getDesktopResolution();
+                let (width, height) = WinHandler::getDesktopResolution();
                 let arg: String = format!("Width: {} Height: {}", width, height);
-                WinHandle::messageBox(arg);
+                WinHandler::messageBox(arg);
             }
             _ => {}
         }
         winuser::DefWindowProcA(hwnd, uMsg, wParam, lParam)
     }
-    unsafe fn hookClipboardListener(&self) {
+    pub unsafe fn hookClipboardListener(&self) {
         winuser::AddClipboardFormatListener(self.hwnd);
     }
-    unsafe fn messageLoop(&self) {
+    pub unsafe fn messageLoop(&self) {
         winuser::ShowWindow(self.hwnd, winuser::SW_SHOW);
         let mut msg: winuser::MSG = std::mem::zeroed();
         while winuser::GetMessageA(&mut msg, null_mut(), 0, 0) != 0 {
             winuser::TranslateMessage(&msg);
             winuser::DispatchMessageA(&msg);
         }
+    }
+}
+
+pub enum WINDOWALINGMENT {
+    TopRight,
+    BottomRight,
+    BottomLeft,
+    TopLeft,
+}
+
+pub struct WindowPos {
+    screen_width: i32,
+    screen_height: i32,
+    offsetFromBorders: i32,
+    percentileOffsetHeight: f32,
+    percentileOffsetWidth: f32,
+    alignment: WINDOWALINGMENT,
+}
+
+impl WindowPos {
+    pub fn new(
+        borderOffset: i32,
+        offsetWidth: f32,
+        offsetHeight: f32,
+        align: WINDOWALINGMENT,
+    ) -> Self {
+        // to fix, delete creation of additional variable
+        let (x,y) = WinHandler::getDesktopResolution(); 
+        return WindowPos {
+            screen_width: x,
+            screen_height: y,
+            alignment: align,
+            offsetFromBorders: borderOffset,
+            percentileOffsetHeight: offsetHeight,
+            percentileOffsetWidth: offsetWidth,
+        };
+    }
+    fn getWindowPos(&self) -> (i32, i32) {
+        match self.alignment {
+            WINDOWALINGMENT::BottomRight => {
+                return (
+                    self.screen_width
+                        - self.percentFromVal(self.screen_width as f32, self.percentileOffsetWidth)
+                            as i32
+                        - self.offsetFromBorders,
+                    self.screen_height
+                        - self
+                            .percentFromVal(self.screen_height as f32, self.percentileOffsetHeight)
+                            as i32
+                        - self.offsetFromBorders,
+                )
+            }
+            WINDOWALINGMENT::BottomLeft => {
+                return (
+                    self.offsetFromBorders,
+                    self.screen_height
+                        - self
+                            .percentFromVal(self.screen_height as f32, self.percentileOffsetHeight)
+                            as i32
+                        - self.offsetFromBorders,
+                )
+            }
+            WINDOWALINGMENT::TopLeft => return (self.offsetFromBorders, self.offsetFromBorders),
+            WINDOWALINGMENT::TopRight => {
+                return (
+                    self.screen_width
+                        - self.percentFromVal(self.screen_width as f32, self.percentileOffsetWidth)
+                            as i32
+                        - self.offsetFromBorders,
+                    self.offsetFromBorders,
+                )
+            }
+        }
+    }
+    fn getSize(&self) -> (i32, i32) {
+        return (
+            self.percentFromVal(self.screen_width as f32, self.percentileOffsetWidth) as i32,
+            self.percentFromVal(self.screen_height as f32, self.percentileOffsetHeight) as i32,
+        );
+    }
+    fn percentFromVal(&self, val: f32, percent: f32) -> f32 {
+        val * (percent * 0.01_f32)
     }
 }
