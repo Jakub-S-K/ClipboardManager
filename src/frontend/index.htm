@@ -24,10 +24,19 @@
                 $(div#rustHOHO).$append(<h1#rustHOHO>{rustVal}</h1><hr />);
             })
         </script>
+        <script type="text/javascript">
+                    function writeOutText()
+                {
+                    document.write("Jestem w funkcji i dzialam.");
+                }
+            //writeOutText();
+        </script>
     </head>
     <body>
         <div id="rustHOHO">
-            <button #rust>Przycisk</button>
+            <button #rust>Przycisk</button>            
         </div>
+        <button onclick="writeOutText();">Naciś</button>
+        <div id="dupa"></div>
     </body>
 </html>
