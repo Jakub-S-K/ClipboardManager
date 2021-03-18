@@ -11,6 +11,7 @@ use winapi::{
 
 #[allow(non_snake_case)]
 mod windowAlingment;
+mod EventHandler;
 
 use windowAlingment::*;
 
@@ -31,7 +32,7 @@ pub fn main() {
 
     unsafe { winuser::AddClipboardFormatListener(windowHwnd) };
     let mut frame = sciter::Window::attach(windowHwnd as sciter::types::HWINDOW);
-    let eventcos = EventHandler{root:None};
+    let eventcos = EventHandler::EventHandler{root:None};
     frame.event_handler(eventcos);
     frame.archive_handler(archive).unwrap();
     //frame.load_html(binHtml, Some("this://app/index.htm"));
@@ -196,47 +197,6 @@ unsafe fn ourMessageBoxU8(textToDisplay: &[u8]) {
         "dupa\0".as_ptr() as *const i8,
         winuser::MB_APPLMODAL | winuser::MB_OK,
     );
-}
-
-#[allow(non_snake_case)]
-struct EventHandler
-{
-    root: Option<sciter::Element>,
-}
-
-
-impl Drop for EventHandler
-{
-    fn drop(&mut self)
-    {
-        unsafe {ourMessageBoxS("Droping struct, bye bye life")};
-    }
-}
-
-#[allow(non_snake_case)]
-impl EventHandler
-{
-    fn NativeCall(&mut self, arg: String) -> sciter::Value
-    {
-        sciter::Value::from(format!("Rust going brrrrrrrrr {}", arg))
-    }
-    fn sum(&mut self, a: i32, b: i32) -> i32{
-        a+b
-    }
-}
-
-impl sciter::EventHandler for EventHandler
-{
-    fn attached(&mut self, root: sciter::HELEMENT)
-    {
-        self.root = Some(sciter::Element::from(root));
-    }
-
-    dispatch_script_call!
-    {
-        fn NativeCall(String); // -> sciter::Value
-        fn sum(i32, i32); // -> i32
-    }  
 }
 
 /*extern "system" fn HostCallbackFnc(scn: sciter::types::LPSCITER_CALLBACK_NOTIFICATION, callbackParam: sciter::types::LPVOID) -> u32
