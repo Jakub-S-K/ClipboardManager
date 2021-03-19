@@ -25,7 +25,7 @@ impl ClipbaordHandler {
         unsafe { winuser::OpenClipboard(hwnd) };
         let amountOfFormats = winuser::CountClipboardFormats();
         let currentFormat = 0;
-        for i in amountOfFormats {
+        for i in 0..amountOfFormats {
             currentFormat = winuser::EnumClipboardFormats(currentFormat);
             parseData(currentFormat);
         }
@@ -35,8 +35,36 @@ impl ClipbaordHandler {
     }
     fn parseData(&mut self, format :u32)
     {
+        use winuser::*;
         match format {
-            winuser::
+            CF_BITMAP =>{},
+            CF_DIB =>{},
+            CF_DIBV5=>{},
+            CF_DIF=>{},
+            CF_DSPBITMAP=>{},
+            CF_DSPENHMETAFILE=>{},
+            CF_DSPMETAFILEPICT=>{},
+            CF_DSPTEXT=>{},
+            CF_ENHMETAFILE=>{},
+            CF_GDIOBJFIRST=>{},
+            CF_GDIOBJLAST=>{},
+            CF_HDROP=>{},
+            CF_LOCALE=>{},
+            CF_MAX=>{},
+            CF_METAFILEPICT=>{},
+            CF_OEMTEXT=>{},
+            CF_OWNERDISPLAY=>{},
+            CF_PALETTE=>{},
+            CF_PENDATA=>{},
+            CF_PRIVATEFIRST=>{},
+            CF_PRIVATELAST=>{},
+            CF_RIFF=>{},
+            CF_TIFF=>{},
+            CF_TEXT=>{},
+            CF_SYLK=>{},
+            CF_UNICODETEXT=>{},
+            CF_WAVE=>{},
+            _ => todo!();
         }
         winuser::GetClipboardData(format);
         
