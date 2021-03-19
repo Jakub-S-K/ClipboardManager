@@ -1,0 +1,1 @@
+start inspector/inspector.exe
