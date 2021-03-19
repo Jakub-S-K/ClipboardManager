@@ -1,3 +1,7 @@
+extern crate sciter;
+
+use std::ptr::null_mut;
+
 pub struct EventHandler {
     pub root: Option<sciter::Element>,
     pub number: i32,
