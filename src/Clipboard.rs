@@ -1,62 +1,104 @@
-use std::ptr::null_mut;
+#[allow(non_snake_case)]
 use winapi::{
     shared::{minwindef, windef},
-    um::winuser,
+    um::{winbase, wingdi, winnt, winuser},
 };
 
-//enum ClipboardVariable {
-    //temp1 : std::ffi::CString, //ascii, html
-    //temp2 : String, //asci, utf-16
-    //}
-    
-#[allow(non_snake_case)]
-pub struct ClipbaordHandler {
-    clipboardType: u32,
-    hwnd: windef::HWND,
+enum CLIPBOARDFORMATS {
+    BITMAP(winnt::HANDLE),
+    DIB(wingdi::BITMAPINFO),
+    DIBV5(wingdi::BITMAPV5HEADER),
+    DIF(),
+    DSPBITMAP(),
+    DSPENHMETAFILE(),
+    DSPMETAFILEPICT(),
+    DSPTEXT(),
+    ENHMETAFILE(),
+    GDIOBJFIRST(),
+    GDIOBJLAST(),
+    HDROP(),
+    LOCALE(),
+    MAX(),
+    METAFILEPICT(),
+    OEMTEXT(std::ffi::CString),
+    OWNERDISPLAY(),
+    PALETTE(),
+    PENDATA(),
+    PRIVATEFIRST(),
+    PRIVATELAST(),
+    RIFF(),
+    TIFF(),
+    TEXT(std::ffi::CString),
+    SYLK(),
+    UNICODETEXT(std::ffi::CString),
+    WAVE(),
+    HTML(std::ffi::CString),
 }
 
+struct ClipbaordEntity {
+    format: Vec<CLIPBOARDFORMATS>,
+}
+
+#[allow(non_snake_case)]
+pub struct ClipbaordHandler {
+    hwnd: windef::HWND,
+    data: Vec<Vec<ClipbaordEntity>>,
+}
+
+#[allow(non_snake_case)]
 impl ClipbaordHandler {
     fn new(tempHWND: windef::HWND) -> Self {
         ClipbaordHandler {
-            clipboardType: 2,
             hwnd: tempHWND,
+            data: Vec::new(),
         }
     }
     pub fn update(&mut self) {
         unsafe { winuser::OpenClipboard(self.hwnd) };
         let amountOfFormats = unsafe { winuser::CountClipboardFormats() };
         let mut currentFormat = 0;
+        // to register history, get current clipboard in usage
+        self.data.push(Vec::new());
+        // to check which clipboard
+        // this is the only existing vector
+        self.data[0][0].format = Vec::new();
         for i in 0..amountOfFormats {
             currentFormat = unsafe { winuser::EnumClipboardFormats(currentFormat) };
-            self.parseData(currentFormat);
+            self.parseData(currentFormat, 0, 0, i as usize);
         }
-
         unsafe { winuser::EmptyClipboard() };
         unsafe { winuser::CloseClipboard() };
     }
-    fn parseData(&mut self, format: u32) {
-        use winapi::um::winbase;
-        use winapi::um::wingdi;
-        use winapi::um::winnt;
-        use winapi::um::winnt::HANDLE;
+    fn retrieveClipboardDataAs<T>(&self, format: u32) -> *mut T {
+        unsafe { winuser::GetClipboardData(format) as *mut T }
+    }
+    fn parseData(
+        &mut self,
+        formatID: u32,
+        clipboardIndex: usize,
+        historyIndex: usize,
+        formatIndex: usize,
+    ) {
         use winuser::*;
-        let mut globalPointers: Vec<HANDLE> = Vec::new();
-        match format {
+        let globalPointer: winnt::HANDLE;
+        let mut format = &mut self.data[clipboardIndex][historyIndex].format[formatIndex];
+        match formatID {
             CF_BITMAP => {
-                let bitmapHandle: windef::HBITMAP = unsafe { GetClipboardData(format) as *mut _ };
+                let bitmapHandle: windef::HBITMAP =
+                    unsafe { winuser::GetClipboardData(formatID) as *mut _ };
             }
             CF_DIB => {
-                let bitmapInfo: *mut wingdi::BITMAPINFO =
-                    unsafe { GetClipboardData(format) as *mut _ };
-                globalPointers.push(unsafe {
-                    winbase::GlobalAlloc(winbase::GHND, std::mem::size_of::<wingdi::BITMAPINFO>())
+                format = &mut CLIPBOARDFORMATS::DIB(unsafe {
+                    *self.retrieveClipboardDataAs::<wingdi::BITMAPINFO>(formatID)
                 });
-                let memPointer: *mut winnt::VOID =
-                    unsafe { winbase::GlobalLock(globalPointers[globalPointers.len() - 1]) };
+                globalPointer = unsafe {
+                    winbase::GlobalAlloc(winbase::GHND, std::mem::size_of::<wingdi::BITMAPINFO>())
+                };
+                let memPointer: *mut winnt::VOID = unsafe { winbase::GlobalLock(globalPointer) };
             }
             CF_DIBV5 => {
                 let bitmapV5Info: *mut wingdi::BITMAPV5HEADER =
-                    unsafe { GetClipboardData(format) as *mut _ };
+                    unsafe { GetClipboardData(formatID) as *mut _ };
             }
             CF_DIF => {}
             CF_DSPBITMAP => {}
@@ -82,8 +124,7 @@ impl ClipbaordHandler {
             CF_SYLK => {}
             CF_UNICODETEXT => {}
             CF_WAVE => {}
-            _ => todo!(),
+            _ => unimplemented!("This format is not supported"),
         }
-        unsafe { winuser::GetClipboardData(format) };
     }
 }
