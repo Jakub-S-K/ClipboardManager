@@ -4,7 +4,7 @@ extern crate sciter;
 
 use std::ptr::null_mut;
 
-mod winapi_processes;
+mod WinapiProcesses;
 
 #[allow(non_snake_case)]
 mod Event;

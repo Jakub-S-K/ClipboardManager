@@ -1,6 +1,6 @@
 extern crate sciter;
 
-use crate::winapi_processes;
+use crate::WinapiProcesses;
 
 use std::ptr::null_mut;
 
