@@ -4,6 +4,8 @@ extern crate sciter;
 
 use std::ptr::null_mut;
 
+mod winapi_processes;
+
 #[allow(non_snake_case)]
 mod Event;
 use Event::*;
@@ -15,6 +17,9 @@ static archive: &[u8] = include_bytes!("../dupa.rc");
 
 #[allow(non_snake_case)]
 pub fn main() {
+    
+    //winapi_processes::isProcessRunning("Telegram.exe");
+
     sciter::set_options(sciter::RuntimeOptions::DebugMode(true));
     let windowHandle = unsafe {
         WinHandler::new(
