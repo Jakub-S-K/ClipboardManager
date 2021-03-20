@@ -2,24 +2,35 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "cargo",
-			"subcommand": "run",
+			"type": "shell",
 			"problemMatcher": [
 				"$rustc"
 			],
-			"label": "Rust: cargo run - ClipboardManager",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"dependsOn":["inspector"]
-			
+			"label": "runWithInspector",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"inspector",
+				"Rust: cargo run"
+			]
 		},
 		{
 			"label": "inspector",
 			"type": "shell",
 			"command": "startInspector.bat",
 			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"type": "cargo",
+			"subcommand": "run",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"label": "Rust: cargo run",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		}
 	]
 }
