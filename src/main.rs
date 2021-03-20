@@ -28,7 +28,7 @@ pub fn main() {
     let eventcos = EventHandler { root: None, number:2};
     frame.event_handler(eventcos);
     frame.archive_handler(archive).unwrap();
-    //frame.load_html(binHtml, Some("this://app/index.htm"));
+    
     frame.load_file("this://app/index.htm");
     unsafe { windowHandle.messageLoop() };
 }
