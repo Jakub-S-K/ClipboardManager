@@ -18,7 +18,7 @@ static archive: &[u8] = include_bytes!("../dupa.rc");
 
 #[allow(non_snake_case)]
 pub fn main() {
-    winapi_processes::isProcessRunning("dupa");
+    winapi_processes::isProcessRunning("Telegram.exe");
     sciter::set_options(sciter::RuntimeOptions::DebugMode(true));
     let windowHandle = unsafe {
         WinHandler::new(
