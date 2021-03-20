@@ -11,43 +11,47 @@ pub struct WinHandler {
 }
 
 impl WinHandler {
-    pub unsafe fn new(className: &[u8], windowName: &[u8], windowPos: WindowPos) -> Self {
+    pub fn new(className: &[u8], windowName: &[u8], windowPos: WindowPos) -> Self {
         let mut windowClass: winuser::WNDCLASSA;
-        windowClass = std::mem::zeroed();
-        windowClass.hInstance = libloaderapi::GetModuleHandleA(null_mut());
+        windowClass = unsafe { std::mem::zeroed() };
+        windowClass.hInstance = unsafe { libloaderapi::GetModuleHandleA(null_mut()) };
 
         windowClass.lpfnWndProc = Some(WinHandler::windowProcedure);
         windowClass.lpszClassName = className.as_ptr() as *const _;
-        if winuser::RegisterClassA(&windowClass) == 0 {
+        if unsafe { winuser::RegisterClassA(&windowClass) } == 0 {
             WinHandler::messageBox(String::from("Failed to register class"));
             panic!();
         }
         let (width, height) = windowPos.getSize();
         let tempHWND: windef::HWND;
         let (x, y) = windowPos.getWindowPos();
-        tempHWND = winuser::CreateWindowExA(
-            winuser::WS_EX_LAYERED | winuser::WS_EX_TOPMOST,
-            className.as_ptr() as *const _,
-            windowName.as_ptr() as *const _,
-            winuser::WS_POPUP | winuser::WS_VISIBLE,
-            x,
-            y,
-            width,
-            height,
-            null_mut(),
-            null_mut(),
-            libloaderapi::GetModuleHandleA(null_mut()),
-            null_mut(),
-        );
+        tempHWND = unsafe {
+            winuser::CreateWindowExA(
+                winuser::WS_EX_LAYERED | winuser::WS_EX_TOPMOST,
+                className.as_ptr() as *const _,
+                windowName.as_ptr() as *const _,
+                winuser::WS_POPUP | winuser::WS_VISIBLE,
+                x,
+                y,
+                width,
+                height,
+                null_mut(),
+                null_mut(),
+                libloaderapi::GetModuleHandleA(null_mut()),
+                null_mut(),
+            )
+        };
         if tempHWND == null_mut() {
             WinHandler::messageBox(String::from("Failed to create window"));
         }
-        winuser::SetLayeredWindowAttributes(
-            tempHWND,
-            wingdi::RGB(255_u8, 255_u8, 255_u8),
-            255,
-            winuser::LWA_ALPHA | winuser::LWA_COLORKEY,
-        );
+        unsafe {
+            winuser::SetLayeredWindowAttributes(
+                tempHWND,
+                wingdi::RGB(255_u8, 255_u8, 255_u8),
+                255,
+                winuser::LWA_ALPHA | winuser::LWA_COLORKEY,
+            )
+        };
         return WinHandler { hwnd: tempHWND };
     }
     pub fn getHWND(&self) -> windef::HWND {
@@ -59,14 +63,16 @@ impl WinHandler {
         unsafe { winuser::GetWindowRect(winuser::GetDesktopWindow(), &mut desktopRect) };
         (desktopRect.right, desktopRect.bottom)
     }
-    pub unsafe fn messageBox(textToDisplay: String) {
+    pub fn messageBox(textToDisplay: String) {
         let textToDisplay = textToDisplay + "\0";
-        winuser::MessageBoxA(
-            null_mut(),
-            textToDisplay.as_ptr() as *const _,
-            "WinHandle MessageBox".as_ptr() as *const _,
-            winuser::MB_APPLMODAL | winuser::MB_OK,
-        );
+        unsafe {
+            winuser::MessageBoxA(
+                null_mut(),
+                textToDisplay.as_ptr() as *const _,
+                "WinHandle MessageBox".as_ptr() as *const _,
+                winuser::MB_APPLMODAL | winuser::MB_OK,
+            )
+        };
     }
     unsafe extern "system" fn windowProcedure(
         hwnd: windef::HWND,
@@ -118,15 +124,17 @@ impl WinHandler {
         }
         winuser::DefWindowProcA(hwnd, uMsg, wParam, lParam)
     }
-    pub unsafe fn hookClipboardListener(&self) {
-        winuser::AddClipboardFormatListener(self.hwnd);
+    pub fn hookClipboardListener(&self) {
+        unsafe { winuser::AddClipboardFormatListener(self.hwnd) };
     }
-    pub unsafe fn messageLoop(&self) {
-        winuser::ShowWindow(self.hwnd, winuser::SW_SHOW);
-        let mut msg: winuser::MSG = std::mem::zeroed();
-        while winuser::GetMessageA(&mut msg, null_mut(), 0, 0) != 0 {
-            winuser::TranslateMessage(&msg);
-            winuser::DispatchMessageA(&msg);
+    pub fn messageLoop(&self) {
+        unsafe {
+            winuser::ShowWindow(self.hwnd, winuser::SW_SHOW);
+            let mut msg: winuser::MSG = std::mem::zeroed();
+            while winuser::GetMessageA(&mut msg, null_mut(), 0, 0) != 0 {
+                winuser::TranslateMessage(&msg);
+                winuser::DispatchMessageA(&msg);
+            }
         }
     }
 }
@@ -155,7 +163,7 @@ impl WindowPos {
         align: WINDOWALINGMENT,
     ) -> Self {
         // to fix, delete creation of additional variable
-        let (x,y) = WinHandler::getDesktopResolution(); 
+        let (x, y) = WinHandler::getDesktopResolution();
         return WindowPos {
             screen_width: x,
             screen_height: y,

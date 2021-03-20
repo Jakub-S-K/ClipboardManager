@@ -1,5 +1,7 @@
 extern crate sciter;
 
+use crate::winapi_processes;
+
 use std::ptr::null_mut;
 
 pub struct EventHandler {
@@ -16,6 +18,9 @@ impl EventHandler {
         self.number += 1;
         sciter::Value::from(self.number)
     }
+    fn isInspectorAlive(&mut self) -> sciter::Value {
+        sciter::Value::from(winapi_processes::isProcessRunning("inspector.exe"))
+    } 
 }
 
 impl sciter::EventHandler for EventHandler {
@@ -32,5 +37,6 @@ impl sciter::EventHandler for EventHandler {
     dispatch_script_call! {
         fn print();
         fn add();
+        fn isInspectorAlive();
     }
 }

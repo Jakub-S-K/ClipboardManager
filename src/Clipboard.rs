@@ -1,3 +1,4 @@
+#[allow(non_snake_case)]
 use std::ptr::null_mut;
 use winapi::{
     shared::{minwindef, windef},
@@ -23,25 +24,40 @@ impl ClipbaordHandler {
     }
     pub fn update(&mut self) {
         unsafe { winuser::OpenClipboard(self.hwnd) };
-        let amountOfFormats = unsafe{winuser::CountClipboardFormats()};
+        let amountOfFormats = unsafe { winuser::CountClipboardFormats() };
         let mut currentFormat = 0;
         for i in 0..amountOfFormats {
-            currentFormat = unsafe{winuser::EnumClipboardFormats(currentFormat)};
+            currentFormat = unsafe { winuser::EnumClipboardFormats(currentFormat) };
             self.parseData(currentFormat);
         }
 
-        unsafe{winuser::EmptyClipboard()};
+        unsafe { winuser::EmptyClipboard() };
         unsafe { winuser::CloseClipboard() };
     }
-    fn parseData(&mut self, format: u32){
+    fn parseData(&mut self, format: u32) {
+        use winapi::um::winbase;
+        use winapi::um::wingdi;
+        use winapi::um::winnt;
+        use winapi::um::winnt::HANDLE;
         use winuser::*;
+        let mut globalPointers: Vec<HANDLE> = Vec::new();
         match format {
             CF_BITMAP => {
-                let bitmapHandle: windef::HBITMAP__ = unsafe{std::mem::transmute<winuser::um::winnt::HANDLE, windef::HBITMAP__>(GetClipboardData(format))};
-            
+                let bitmapHandle: windef::HBITMAP = unsafe { GetClipboardData(format) as *mut _ };
             }
-            CF_DIB => {}
-            CF_DIBV5 => {}
+            CF_DIB => {
+                let bitmapInfo: *mut wingdi::BITMAPINFO =
+                    unsafe { GetClipboardData(format) as *mut _ };
+                globalPointers.push(unsafe {
+                    winbase::GlobalAlloc(winbase::GHND, std::mem::size_of::<wingdi::BITMAPINFO>())
+                });
+                let memPointer: *mut winnt::VOID =
+                    unsafe { winbase::GlobalLock(globalPointers[globalPointers.len() - 1]) };
+            }
+            CF_DIBV5 => {
+                let bitmapV5Info: *mut wingdi::BITMAPV5HEADER =
+                    unsafe { GetClipboardData(format) as *mut _ };
+            }
             CF_DIF => {}
             CF_DSPBITMAP => {}
             CF_DSPENHMETAFILE => {}
@@ -68,6 +84,6 @@ impl ClipbaordHandler {
             CF_WAVE => {}
             _ => todo!(),
         }
-        unsafe{winuser::GetClipboardData(format)};
+        unsafe { winuser::GetClipboardData(format) };
     }
 }
