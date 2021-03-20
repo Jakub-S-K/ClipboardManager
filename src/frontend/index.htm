@@ -57,8 +57,10 @@
         </script>
     <script type="text/tiscript">
         function self.ready(){
-            if (view.connectToInspector) // the view is in debug mode
-                view.connectToInspector();
+            if (view.connectToInspector) { // the view is in debug mode
+                if (view.isInspectorAlive())
+                    view.connectToInspector();
+            }
         }
         $(button#nacisk).on("click", function() {
             dupa();
