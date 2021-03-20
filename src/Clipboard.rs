@@ -1,4 +1,3 @@
-#[allow(non_snake_case)]
 use std::ptr::null_mut;
 use winapi::{
     shared::{minwindef, windef},
@@ -6,10 +5,11 @@ use winapi::{
 };
 
 //enum ClipboardVariable {
-//temp1 : std::ffi::CString, //ascii, html
-//temp2 : String, //asci, utf-16
-//}
-
+    //temp1 : std::ffi::CString, //ascii, html
+    //temp2 : String, //asci, utf-16
+    //}
+    
+#[allow(non_snake_case)]
 pub struct ClipbaordHandler {
     clipboardType: u32,
     hwnd: windef::HWND,
