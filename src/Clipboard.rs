@@ -15,58 +15,59 @@ pub struct ClipbaordHandler {
 }
 
 impl ClipbaordHandler {
-    fn new(tempHWND: windef::HWND) -> self {
+    fn new(tempHWND: windef::HWND) -> Self {
         ClipbaordHandler {
             clipboardType: 2,
             hwnd: tempHWND,
         }
     }
     pub fn update(&mut self) {
-        unsafe { winuser::OpenClipboard(hwnd) };
-        let amountOfFormats = winuser::CountClipboardFormats();
-        let currentFormat = 0;
+        unsafe { winuser::OpenClipboard(self.hwnd) };
+        let amountOfFormats = unsafe{winuser::CountClipboardFormats()};
+        let mut currentFormat = 0;
         for i in 0..amountOfFormats {
-            currentFormat = winuser::EnumClipboardFormats(currentFormat);
-            parseData(currentFormat);
+            currentFormat = unsafe{winuser::EnumClipboardFormats(currentFormat)};
+            self.parseData(currentFormat);
         }
 
-        winuser::EmptyClipboard();
+        unsafe{winuser::EmptyClipboard()};
         unsafe { winuser::CloseClipboard() };
     }
-    fn parseData(&mut self, format :u32)
-    {
+    fn parseData(&mut self, format: u32){
         use winuser::*;
         match format {
-            CF_BITMAP =>{},
-            CF_DIB =>{},
-            CF_DIBV5=>{},
-            CF_DIF=>{},
-            CF_DSPBITMAP=>{},
-            CF_DSPENHMETAFILE=>{},
-            CF_DSPMETAFILEPICT=>{},
-            CF_DSPTEXT=>{},
-            CF_ENHMETAFILE=>{},
-            CF_GDIOBJFIRST=>{},
-            CF_GDIOBJLAST=>{},
-            CF_HDROP=>{},
-            CF_LOCALE=>{},
-            CF_MAX=>{},
-            CF_METAFILEPICT=>{},
-            CF_OEMTEXT=>{},
-            CF_OWNERDISPLAY=>{},
-            CF_PALETTE=>{},
-            CF_PENDATA=>{},
-            CF_PRIVATEFIRST=>{},
-            CF_PRIVATELAST=>{},
-            CF_RIFF=>{},
-            CF_TIFF=>{},
-            CF_TEXT=>{},
-            CF_SYLK=>{},
-            CF_UNICODETEXT=>{},
-            CF_WAVE=>{},
-            _ => todo!();
+            CF_BITMAP => {
+                let bitmapHandle: windef::HBITMAP__ = unsafe{std::mem::transmute<winuser::um::winnt::HANDLE, windef::HBITMAP__>(GetClipboardData(format))};
+            
+            }
+            CF_DIB => {}
+            CF_DIBV5 => {}
+            CF_DIF => {}
+            CF_DSPBITMAP => {}
+            CF_DSPENHMETAFILE => {}
+            CF_DSPMETAFILEPICT => {}
+            CF_DSPTEXT => {}
+            CF_ENHMETAFILE => {}
+            CF_GDIOBJFIRST => {}
+            CF_GDIOBJLAST => {}
+            CF_HDROP => {}
+            CF_LOCALE => {}
+            CF_MAX => {}
+            CF_METAFILEPICT => {}
+            CF_OEMTEXT => {}
+            CF_OWNERDISPLAY => {}
+            CF_PALETTE => {}
+            CF_PENDATA => {}
+            CF_PRIVATEFIRST => {}
+            CF_PRIVATELAST => {}
+            CF_RIFF => {}
+            CF_TIFF => {}
+            CF_TEXT => {}
+            CF_SYLK => {}
+            CF_UNICODETEXT => {}
+            CF_WAVE => {}
+            _ => todo!(),
         }
-        winuser::GetClipboardData(format);
-        
+        unsafe{winuser::GetClipboardData(format)};
     }
 }

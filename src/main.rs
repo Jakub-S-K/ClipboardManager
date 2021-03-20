@@ -11,6 +11,8 @@ use Event::*;
 mod Windows;
 use Windows::*;
 
+mod Clipboard;
+
 static archive: &[u8] = include_bytes!("../dupa.rc");
 
 #[allow(non_snake_case)]
