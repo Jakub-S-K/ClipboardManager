@@ -1,6 +1,6 @@
 #[allow(non_snake_case)]
 use winapi::{
-    shared::{minwindef, windef},
+    shared::windef,
     um::{winbase, wingdi, winnt, winuser},
 };
 
@@ -33,25 +33,93 @@ enum CLIPBOARDFORMATS {
     UNICODETEXT(std::ffi::CString),
     WAVE(),
     HTML(std::ffi::CString),
+    EMPTY,
 }
 
 struct ClipbaordEntity {
     format: Vec<CLIPBOARDFORMATS>,
 }
 
+impl ClipbaordEntity {
+    pub fn with_capacity(capacity: usize) -> Self {
+        ClipbaordEntity {
+            format: Vec::with_capacity(capacity),
+        }
+    }
+    pub fn new() -> Self {
+        ClipbaordEntity { format: Vec::new() }
+    }
+}
+
 #[allow(non_snake_case)]
 pub struct ClipbaordHandler {
     hwnd: windef::HWND,
     data: Vec<Vec<ClipbaordEntity>>,
+    currentHistory: usize,
+    currentClipboard: usize,
+    maxHistorySize: usize,
+    maxClipboardSize: usize,
 }
 
 #[allow(non_snake_case)]
 impl ClipbaordHandler {
-    fn new(tempHWND: windef::HWND) -> Self {
+    // TODO file that contains data, how much clipboards to create, how much history to store
+    // TODO load from file past clipboards, and assign them to struct upon creation ClipboardHandler::Loadout
+    fn new_default(tempHWND: windef::HWND) -> Self {
+        let tempMaxClipSize: usize = 4;
+        let tempMaxHistSize: usize = 5;
+        let tempCurrentHist: usize = 0;
+        let tempCurrentClip: usize = 0;
+        let mut tempVec = Vec::with_capacity(tempMaxClipSize);
+        for i in 0..tempMaxClipSize {
+            tempVec.push(Vec::with_capacity(tempMaxHistSize));
+            for _j in 0..tempMaxHistSize {
+                tempVec[i as usize].push(ClipbaordEntity::new());
+            }
+        }
         ClipbaordHandler {
             hwnd: tempHWND,
-            data: Vec::new(),
+            data: tempVec,
+            currentClipboard: tempCurrentClip,
+            currentHistory: tempCurrentHist,
+            maxHistorySize: tempMaxHistSize,
+            maxClipboardSize: tempMaxClipSize,
         }
+    }
+    fn new_loadout(tempHWND: windef::HWND) -> Option<Self> {
+        let tempMaxClipSize: usize = 3;
+        let tempMaxHistSize: usize = 5;
+        let tempCurrentHist: usize = 0;
+        let tempCurrentClip: usize = 0;
+        let mut tempVec = Vec::with_capacity(tempMaxClipSize);
+        for i in 0..tempMaxClipSize {
+            tempVec.push(Vec::with_capacity(tempMaxHistSize));
+            for _j in 0..tempMaxHistSize {
+                tempVec[i as usize].push(ClipbaordEntity::new());
+            }
+        }
+        Some(ClipbaordHandler {
+            hwnd: tempHWND,
+            data: tempVec,
+            currentClipboard: tempCurrentClip,
+            currentHistory: tempCurrentHist,
+            maxHistorySize: tempMaxHistSize,
+            maxClipboardSize: tempMaxClipSize,
+        })
+    }
+    pub fn new(tempHWND: windef::HWND) -> Self {
+        match ClipbaordHandler::new_loadout(tempHWND){
+            Some(clipboard) => {
+                clipboard
+            }
+            None => {
+                ClipbaordHandler::new_default(tempHWND)
+            }
+        }    
+    }
+    #[inline]
+    fn getCurrentFormat(&mut self) -> &mut ClipbaordEntity {
+        &mut self.data[self.currentClipboard][self.currentHistory]
     }
     pub fn update(&mut self) {
         unsafe { winuser::OpenClipboard(self.hwnd) };
@@ -61,12 +129,11 @@ impl ClipbaordHandler {
         self.data.push(Vec::new());
         // to check which clipboard
         // this is the only existing vector
-        self.data[0][0].format = Vec::new();
+        self.getCurrentFormat().format = Vec::new();
         for i in 0..amountOfFormats {
             currentFormat = unsafe { winuser::EnumClipboardFormats(currentFormat) };
-            self.parseData(currentFormat, 0, 0, i as usize);
+            self.parseData(currentFormat,  i as usize);
         }
-        unsafe { winuser::EmptyClipboard() };
         unsafe { winuser::CloseClipboard() };
     }
     fn retrieveClipboardDataAs<T>(&self, format: u32) -> *mut T {
@@ -75,13 +142,11 @@ impl ClipbaordHandler {
     fn parseData(
         &mut self,
         formatID: u32,
-        clipboardIndex: usize,
-        historyIndex: usize,
         formatIndex: usize,
     ) {
         use winuser::*;
         let globalPointer: winnt::HANDLE;
-        let mut format = &mut self.data[clipboardIndex][historyIndex].format[formatIndex];
+        let mut format = &mut self.getCurrentFormat().format[formatIndex];
         match formatID {
             CF_BITMAP => {
                 let bitmapHandle: windef::HBITMAP =
@@ -124,6 +189,7 @@ impl ClipbaordHandler {
             CF_SYLK => {}
             CF_UNICODETEXT => {}
             CF_WAVE => {}
+            EMPTY => {}
             _ => unimplemented!("This format is not supported"),
         }
     }

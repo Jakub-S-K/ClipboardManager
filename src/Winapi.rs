@@ -4,14 +4,22 @@ use winapi::{
     um::{libloaderapi, wingdi, winuser},
 };
 
+use crate::Clipboard::ClipbaordHandler;
+
 extern crate sciter;
 
 pub struct WinHandler {
     hwnd: windef::HWND,
+    clipboard: ClipbaordHandler,
 }
 
 impl WinHandler {
-    pub fn new(className: &[u8], windowName: &[u8], windowPos: WindowPos) -> Self {
+    pub fn new(
+        className: &[u8],
+        windowName: &[u8],
+        windowPos: WindowPos,
+        clipboardF: ClipbaordHandler,
+    ) -> Self {
         let mut windowClass: winuser::WNDCLASSA;
         windowClass = unsafe { std::mem::zeroed() };
         windowClass.hInstance = unsafe { libloaderapi::GetModuleHandleA(null_mut()) };
@@ -52,7 +60,10 @@ impl WinHandler {
                 winuser::LWA_ALPHA | winuser::LWA_COLORKEY,
             )
         };
-        return WinHandler { hwnd: tempHWND };
+        return WinHandler {
+            hwnd: tempHWND,
+            clipboard: clipboardF,
+        };
     }
     pub fn getHWND(&self) -> windef::HWND {
         self.hwnd
@@ -113,7 +124,9 @@ impl WinHandler {
                 winuser::PostQuitMessage(69);
             }
             winuser::WM_CLIPBOARDUPDATE => {
-                winuser::ShowWindow(hwnd, winuser::SW_SHOW);
+                todo!();
+                //WinHandler::getClipboard();
+                //handler.update();
             }
             winuser::WM_DISPLAYCHANGE => {
                 let (width, height) = WinHandler::getDesktopResolution();

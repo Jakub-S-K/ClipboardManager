@@ -10,8 +10,8 @@ mod WinapiProcesses;
 mod Event;
 use Event::*;
 #[allow(non_snake_case)]
-mod Windows;
-use Windows::*;
+mod Winapi;
+use Winapi::*;
 
 mod Clipboard;
 
@@ -19,7 +19,6 @@ static archive: &[u8] = include_bytes!("../dupa.rc");
 
 #[allow(non_snake_case)]
 pub fn main() {
-    //winapi_processes::isProcessRunning("Telegram.exe");
     sciter::set_options(sciter::RuntimeOptions::DebugMode(true));
     let windowHandle = WinHandler::new(
         "clipbaord_manager\0".as_bytes(),
