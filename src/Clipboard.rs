@@ -36,6 +36,42 @@ enum CLIPBOARDFORMATS {
     EMPTY,
 }
 
+impl CLIPBOARDFORMATS { //Get number behind enum, it will be used later for saving clipboards data in file
+    pub fn getID(&self) -> u32 {
+        match *self {
+            CF_BITMAP => 0,
+            CF_DIB => 1,
+            CF_DIBV5 => 2,
+            CF_DIF => 3,
+            CF_DSPBITMAP => 4,
+            CF_DSPENHMETAFILE => 5,
+            CF_DSPMETAFILEPICT => 6,
+            CF_DSPTEXT => 7,
+            CF_ENHMETAFILE => 8,
+            CF_GDIOBJFIRST => 9,
+            CF_GDIOBJLAST => 10,
+            CF_HDROP => 11,
+            CF_LOCALE => 12,
+            CF_MAX => 13,
+            CF_METAFILEPICT => 14,
+            CF_OEMTEXT => 15,
+            CF_OWNERDISPLAY => 16,
+            CF_PALETTE => 17,
+            CF_PENDATA => 18,
+            CF_PRIVATEFIRST => 19,
+            CF_PRIVATELAST => 20,
+            CF_RIFF => 21,
+            CF_TIFF => 22,
+            CF_TEXT => 23,
+            CF_SYLK => 24,
+            CF_UNICODETEXT => 25,
+            CF_WAVE => 26,
+            EMPTY => 27,
+            _ => panic!("Unsupported format"),
+        }
+    }
+}
+
 struct ClipbaordEntity {
     format: Vec<CLIPBOARDFORMATS>,
 }
@@ -98,24 +134,13 @@ impl ClipbaordHandler {
                 tempVec[i as usize].push(ClipbaordEntity::new());
             }
         }
-        Some(ClipbaordHandler {
-            hwnd: tempHWND,
-            data: tempVec,
-            currentClipboard: tempCurrentClip,
-            currentHistory: tempCurrentHist,
-            maxHistorySize: tempMaxHistSize,
-            maxClipboardSize: tempMaxClipSize,
-        })
+        None //For now custom file format is not supported
     }
     pub fn new(tempHWND: windef::HWND) -> Self {
-        match ClipbaordHandler::new_loadout(tempHWND){
-            Some(clipboard) => {
-                clipboard
-            }
-            None => {
-                ClipbaordHandler::new_default(tempHWND)
-            }
-        }    
+        match ClipbaordHandler::new_loadout(tempHWND) {
+            Some(clipboard) => clipboard,
+            None => ClipbaordHandler::new_default(tempHWND),
+        }
     }
     #[inline]
     fn getCurrentFormat(&mut self) -> &mut ClipbaordEntity {
@@ -132,18 +157,14 @@ impl ClipbaordHandler {
         self.getCurrentFormat().format = Vec::new();
         for i in 0..amountOfFormats {
             currentFormat = unsafe { winuser::EnumClipboardFormats(currentFormat) };
-            self.parseData(currentFormat,  i as usize);
+            self.parseData(currentFormat, i as usize);
         }
         unsafe { winuser::CloseClipboard() };
     }
     fn retrieveClipboardDataAs<T>(&self, format: u32) -> *mut T {
         unsafe { winuser::GetClipboardData(format) as *mut T }
     }
-    fn parseData(
-        &mut self,
-        formatID: u32,
-        formatIndex: usize,
-    ) {
+    fn parseData(&mut self, formatID: u32, formatIndex: usize) {
         use winuser::*;
         let globalPointer: winnt::HANDLE;
         let mut format = &mut self.getCurrentFormat().format[formatIndex];

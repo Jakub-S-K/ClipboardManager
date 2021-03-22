@@ -14,6 +14,7 @@ mod Winapi;
 use Winapi::*;
 
 mod Clipboard;
+#[allow(non_snake_case)]
 
 static archive: &[u8] = include_bytes!("../dupa.rc");
 
@@ -24,6 +25,7 @@ pub fn main() {
         "clipbaord_manager\0".as_bytes(),
         "Dupa\0".as_bytes(),
         WindowPos::new(45, 15_f32, 43_f32, WINDOWALINGMENT::TopRight),
+        Clipboard::ClipbaordHandler::new(null_mut())
     );
     windowHandle.hookClipboardListener();
     let mut frame = sciter::Window::attach(windowHandle.getHWND() as sciter::types::HWINDOW);
