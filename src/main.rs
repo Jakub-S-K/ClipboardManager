@@ -20,7 +20,7 @@ static archive: &[u8] = include_bytes!("../dupa.rc");
 
 #[allow(non_snake_case)]
 pub fn main() {
-    sciter::set_options(sciter::RuntimeOptions::DebugMode(true));
+    sciter::set_options(sciter::RuntimeOptions::DebugMode(true)).unwrap();
     let windowHandle = WinHandler::new(
         "clipbaord_manager\0".as_bytes(),
         "Dupa\0".as_bytes(),
