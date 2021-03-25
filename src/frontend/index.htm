@@ -20,15 +20,21 @@
             text-align: center;
             justify-content: center;
             height: 13%;
-            position: relative;
-        }
+            position: absolute;
+            left:0;
+            top:0;
+            overflow:hidden;
 
+        }
         #midBox {
             padding-left: 10%;
             padding-top: 2%;
             justify-content: left;
-            height: 70%;
+            min-height: 70%;
+            width:100%;
             background-color: rgba(226, 186, 186, 0.5);
+            position: relative;
+            overflow-y:auto;
         }
 
         hr {
@@ -48,6 +54,8 @@
             text-align: right;
             padding-right: 3%;
             font-style: italic;
+            position: relative;
+            overflow: hidden;
         }
     </style>
     <script type="text/tiscript">
@@ -71,14 +79,21 @@
         {
             $(div#midBox).$append(<h1#takCzemuPytasz>{view.add()}</h1><hr />);
         }
-
+        
+        var $window = $(window),
+        $stickyEl = $('#upperBox'),
+        elTop = $stickyEl.offset().top;
+ 
+        $window.scroll(function() {
+            $stickyEl.toggleClass('sticky', $window.scrollTop() > elTop);
+        });
 
     </script>
 </head>
 
 <body>
     <div class="container">
-        <div id="upperBox">
+        <div #upperBox>
             <div id="rustHOHO">
                 <button #rust>Przycisk</button>
             </div>
