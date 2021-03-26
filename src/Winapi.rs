@@ -1,4 +1,3 @@
-use lazy_static::lazy_static;
 use std::ptr::null_mut;
 use winapi::{
     shared::{minwindef, windef},
