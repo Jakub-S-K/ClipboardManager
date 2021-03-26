@@ -4,13 +4,13 @@ use winapi::{
     um::{libloaderapi, wingdi, winuser},
 };
 
-use crate::Clipboard::ClipbaordHandler;
+use crate::Clipboard::ClipboardHandler;
 
 extern crate sciter;
 
 pub struct WinHandler {
     hwnd: windef::HWND,
-    clipboard: ClipbaordHandler,
+    clipboard: ClipboardHandler,
 }
 
 impl WinHandler {
@@ -18,7 +18,7 @@ impl WinHandler {
         className: &[u8],
         windowName: &[u8],
         windowPos: WindowPos,
-        clipboardF: ClipbaordHandler,
+        clipboardF: ClipboardHandler,
     ) -> Self {
         let mut windowClass: winuser::WNDCLASSA;
         windowClass = unsafe { std::mem::zeroed() };
