@@ -1,12 +1,14 @@
 extern crate sciter;
 
 use crate::WinapiProcesses;
+use crate::Clipboard;
 
 use std::ptr::null_mut;
 
 pub struct EventHandler {
     pub root: Option<sciter::Element>,
     pub number: i32,
+    clipboard: Clipboard::ClipbaordHandler,
 }
 
 impl EventHandler {
@@ -21,6 +23,23 @@ impl EventHandler {
     fn isInspectorAlive(&mut self) -> sciter::Value {
         sciter::Value::from(WinapiProcesses::isProcessRunning("inspector.exe"))
     } 
+    fn getClipbaordApi(&mut self) -> sciter::Value 
+    {
+        fn changeCurrentClipboards(args: &[sciter::Value]) -> sciter::Value
+        {
+            if args.len() > 0
+            {
+                return sciter::Value::error("Function takes one argument")
+            }
+            sciter::Value::from(2)
+        }
+
+        let mut api = sciter::Value::new();
+
+        api.set_item("changeClipbaord", changeCurrentClipboards);
+
+        api
+    }
 }
 
 impl sciter::EventHandler for EventHandler {
@@ -38,5 +57,6 @@ impl sciter::EventHandler for EventHandler {
         fn print();
         fn add();
         fn isInspectorAlive();
+        fn getClipbaordApi();
     }
 }
