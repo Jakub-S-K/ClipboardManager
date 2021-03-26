@@ -150,6 +150,7 @@ impl ClipboardHandler {
         &mut self.data[self.currentClipboard][self.currentHistory]
     }
     pub fn update(&mut self) {
+        println!("update Function");
         unsafe { winuser::OpenClipboard(self.hwnd) };
         let amountOfFormats = unsafe { winuser::CountClipboardFormats() };
         let mut currentFormat = 0;
