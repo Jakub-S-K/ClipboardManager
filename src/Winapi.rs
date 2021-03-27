@@ -18,7 +18,7 @@ impl WinHandler {
         className: &[u8],
         windowName: &[u8],
         windowPos: WindowPos,
-        clipboardF: ClipboardHandler,
+        mut clipboardF: ClipboardHandler,
     ) -> Self {
         let mut windowClass: winuser::WNDCLASSA;
         windowClass = unsafe { std::mem::zeroed() };
@@ -26,6 +26,7 @@ impl WinHandler {
 
         windowClass.lpfnWndProc = Some(WinHandler::windowProcedure);
         windowClass.lpszClassName = className.as_ptr() as *const _;
+        windowClass.cbWndExtra = std::mem::size_of::<ClipboardHandler>() as i32;
         if unsafe { winuser::RegisterClassA(&windowClass) } == 0 {
             WinHandler::messageBox(String::from("Failed to register class"));
             panic!();
@@ -52,7 +53,13 @@ impl WinHandler {
         if tempHWND == null_mut() {
             WinHandler::messageBox(String::from("Failed to create window"));
         }
+
         unsafe {
+            winuser::SetWindowLongPtrA(
+                tempHWND,
+                winuser::GWL_USERDATA,
+                &mut clipboardF as *mut ClipboardHandler as *mut isize as isize,
+            );
             winuser::SetLayeredWindowAttributes(
                 tempHWND,
                 wingdi::RGB(255_u8, 255_u8, 255_u8),
@@ -93,6 +100,9 @@ impl WinHandler {
     ) -> minwindef::LRESULT {
         let sciterApiRef = sciter::SciterAPI();
         //struct holding all adresses of sciterApi function pointers
+        let mut CLIPBOARD_INSTANCE: &mut ClipboardHandler;
+        CLIPBOARD_INSTANCE = &mut *(winuser::GetWindowLongPtrA(hwnd, winuser::GWL_USERDATA) as *mut isize
+            as *mut ClipboardHandler);
 
         let mut handledBySciter: minwindef::BOOL = 0;
         let lResult = (sciterApiRef.SciterProcND)(
@@ -106,17 +116,7 @@ impl WinHandler {
             return lResult;
         }
         match uMsg {
-            winuser::WM_CREATE => {
-                //ourMessageBoxS(std::env::current_dir().expect("Couldn't yield path").to_str().unwrap());
-                //(sciterApiRef.SciterSetCallback)(hwnd as sciter::types::HWINDOW, HostCallbackFnc, null_mut());
-                //let binGif = include_bytes!("src\\frontend\\data\\someRealShit.gif");
-                //let htmlInternalPath: Vec<u16> = String::from("this://someRealShit.gif\0").encode_utf16().collect();
-                //let htmlInternalPath: Vec<u16> = "F:\\Projekty\\RUST\\GUI\\Sciter\\ClipboardManager\\src\\frontend\\data\\someRealShit.gif".encode_utf16().collect();
-                //(sciterApiRef.SciterLoadFile)(hwnd as sciter::types::HWINDOW, htmlInternalPath.as_ptr());
-                //let binHtml = include_bytes!("F:\\Projekty\\RUST\\GUI\\Sciter\\ClipboardManager\\src\\frontend\\index.htm");
-                //let htmlInternalPath: Vec<u16> = String::from("this://index.htm\0").encode_utf16().collect();
-                //(sciterApiRef.SciterLoadHtml)(hwnd as sciter::types::HWINDOW, binHtml.as_ptr(), std::mem::size_of_val(binHtml) as u32, htmlInternalPath.as_ptr());
-            }
+            winuser::WM_CREATE => {}
             winuser::WM_CLOSE => {
                 winuser::DestroyWindow(hwnd);
             }
@@ -124,9 +124,9 @@ impl WinHandler {
                 winuser::PostQuitMessage(69);
             }
             winuser::WM_CLIPBOARDUPDATE => {
-                todo!();
                 //WinHandler::getClipboard();
                 //handler.update();
+                CLIPBOARD_INSTANCE.update();
             }
             winuser::WM_DISPLAYCHANGE => {
                 let (width, height) = WinHandler::getDesktopResolution();
