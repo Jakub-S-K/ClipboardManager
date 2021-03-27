@@ -178,6 +178,7 @@ impl ClipboardHandler {
         //let mut format = &mut self.getCurrentFormat().format[formatIndex];
         match formatID {
             CF_BITMAP => {
+                self.getCurrentFormat().format[formatIndex] = unsafe {CLIPBOARDFORMATS::BITMAP(*self.retrieveClipboardDataAs::<winnt::HANDLE>(formatID))};
                 if let CLIPBOARDFORMATS::BITMAP(data) = CLIPBOARDFORMATS::BITMAP(unsafe {
                     *self.retrieveClipboardDataAs::<winnt::HANDLE>(formatID)
                 }) {

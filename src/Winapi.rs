@@ -13,11 +13,7 @@ pub struct WinHandler {
 }
 
 impl WinHandler {
-    pub fn new(
-        className: &[u8],
-        windowName: &[u8],
-        windowPos: WindowPos,
-    ) -> Self {
+    pub fn new(className: &[u8], windowName: &[u8], windowPos: WindowPos) -> Self {
         let mut windowClass: winuser::WNDCLASSA;
         windowClass = unsafe { std::mem::zeroed() };
         windowClass.hInstance = unsafe { libloaderapi::GetModuleHandleA(null_mut()) };
@@ -60,17 +56,16 @@ impl WinHandler {
                 winuser::LWA_ALPHA | winuser::LWA_COLORKEY,
             )
         };
-        return WinHandler {
-            hwnd: tempHWND,
-        };
+        return WinHandler { hwnd: tempHWND };
     }
-    pub fn setClipboard(&self, clipboard: *mut ClipboardHandler)
-    {
-        unsafe{ winuser::SetWindowLongPtrA(
-            self.getHWND(),
-            winuser::GWL_USERDATA,
-            clipboard as *mut ClipboardHandler as *mut isize as isize,
-        )};
+    pub fn setClipboard(&self, clipboard: *mut ClipboardHandler) {
+        unsafe {
+            winuser::SetWindowLongPtrA(
+                self.getHWND(),
+                winuser::GWL_USERDATA,
+                clipboard as *mut ClipboardHandler as *mut isize as isize,
+            )
+        };
     }
     pub fn getHWND(&self) -> windef::HWND {
         self.hwnd
@@ -80,6 +75,9 @@ impl WinHandler {
         let mut desktopRect: windef::RECT = unsafe { std::mem::zeroed() };
         unsafe { winuser::GetWindowRect(winuser::GetDesktopWindow(), &mut desktopRect) };
         (desktopRect.right, desktopRect.bottom)
+    }
+    pub fn sendMessage(&self, message: u32) {
+        unsafe { winuser::SendMessageA(self.hwnd, message, 0, 0) };
     }
     pub fn messageBox(textToDisplay: String) {
         let textToDisplay = textToDisplay + "\0";
@@ -101,8 +99,8 @@ impl WinHandler {
         let sciterApiRef = sciter::SciterAPI();
         //struct holding all adresses of sciterApi function pointers
         let CLIPBOARD_INSTANCE: &mut ClipboardHandler;
-        CLIPBOARD_INSTANCE = &mut *(winuser::GetWindowLongPtrA(hwnd, winuser::GWL_USERDATA) as *mut isize
-            as *mut ClipboardHandler);
+        CLIPBOARD_INSTANCE = &mut *(winuser::GetWindowLongPtrA(hwnd, winuser::GWL_USERDATA)
+            as *mut isize as *mut ClipboardHandler);
 
         let mut handledBySciter: minwindef::BOOL = 0;
         let lResult = (sciterApiRef.SciterProcND)(
