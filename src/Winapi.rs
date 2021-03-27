@@ -10,7 +10,6 @@ extern crate sciter;
 
 pub struct WinHandler {
     hwnd: windef::HWND,
-    clipboard: ClipboardHandler,
 }
 
 impl WinHandler {
@@ -18,7 +17,6 @@ impl WinHandler {
         className: &[u8],
         windowName: &[u8],
         windowPos: WindowPos,
-        mut clipboardF: ClipboardHandler,
     ) -> Self {
         let mut windowClass: winuser::WNDCLASSA;
         windowClass = unsafe { std::mem::zeroed() };
@@ -55,11 +53,6 @@ impl WinHandler {
         }
 
         unsafe {
-            winuser::SetWindowLongPtrA(
-                tempHWND,
-                winuser::GWL_USERDATA,
-                &mut clipboardF as *mut ClipboardHandler as *mut isize as isize,
-            );
             winuser::SetLayeredWindowAttributes(
                 tempHWND,
                 wingdi::RGB(255_u8, 255_u8, 255_u8),
@@ -69,8 +62,15 @@ impl WinHandler {
         };
         return WinHandler {
             hwnd: tempHWND,
-            clipboard: clipboardF,
         };
+    }
+    pub fn setClipboard(&self, clipboard: *mut ClipboardHandler)
+    {
+        unsafe{ winuser::SetWindowLongPtrA(
+            self.getHWND(),
+            winuser::GWL_USERDATA,
+            clipboard as *mut ClipboardHandler as *mut isize as isize,
+        )};
     }
     pub fn getHWND(&self) -> windef::HWND {
         self.hwnd
@@ -100,7 +100,7 @@ impl WinHandler {
     ) -> minwindef::LRESULT {
         let sciterApiRef = sciter::SciterAPI();
         //struct holding all adresses of sciterApi function pointers
-        let mut CLIPBOARD_INSTANCE: &mut ClipboardHandler;
+        let CLIPBOARD_INSTANCE: &mut ClipboardHandler;
         CLIPBOARD_INSTANCE = &mut *(winuser::GetWindowLongPtrA(hwnd, winuser::GWL_USERDATA) as *mut isize
             as *mut ClipboardHandler);
 

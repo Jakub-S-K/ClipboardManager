@@ -25,14 +25,15 @@ pub fn main() {
         "clipbaord_manager\0".as_bytes(),
         "Dupa\0".as_bytes(),
         WindowPos::new(45, 15_f32, 43_f32, WINDOWALINGMENT::TopRight),
-        Clipboard::ClipboardHandler::new(null_mut())
     );
+    let mut clipboard = Clipboard::ClipboardHandler::new(windowHandle.getHWND());
+    windowHandle.setClipboard(&mut clipboard);
     windowHandle.hookClipboardListener();
     let mut frame = sciter::Window::attach(windowHandle.getHWND() as sciter::types::HWINDOW);
     let eventcos = EventHandler {
         root: None,
         number: 2,
-        clipboard: Clipboard::ClipboardHandler::new(null_mut())
+        clipboard: Clipboard::ClipboardHandler::new(null_mut()),
     };
     frame.event_handler(eventcos);
     frame.archive_handler(archive).unwrap();
