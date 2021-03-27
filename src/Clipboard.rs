@@ -291,6 +291,8 @@ impl ClipboardHandler {
             _ => unimplemented!("This format is not supported"),
         }
     }
+
+    // Funcitons to be called from eventHandler for script use only
     pub fn changeCurrentClipboard(&mut self, newClipbaord: usize) {
         if newClipbaord < self.maxClipboardSize {
             self.currentClipboard = newClipbaord;
