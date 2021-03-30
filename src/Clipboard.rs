@@ -41,36 +41,36 @@ enum CLIPBOARDFORMATS {
 impl CLIPBOARDFORMATS {
     //Get number behind enum, it will be used later for saving clipboards data in file
     pub fn getID(&self) -> u32 {
-        match &*self {
-            CF_BITMAP => 0,
-            CF_DIB => 1,
-            CF_DIBV5 => 2,
-            CF_DIF => 3,
-            CF_DSPBITMAP => 4,
-            CF_DSPENHMETAFILE => 5,
-            CF_DSPMETAFILEPICT => 6,
-            CF_DSPTEXT => 7,
-            CF_ENHMETAFILE => 8,
-            CF_GDIOBJFIRST => 9,
-            CF_GDIOBJLAST => 10,
-            CF_HDROP => 11,
-            CF_LOCALE => 12,
-            CF_MAX => 13,
-            CF_METAFILEPICT => 14,
-            CF_OEMTEXT => 15,
-            CF_OWNERDISPLAY => 16,
-            CF_PALETTE => 17,
-            CF_PENDATA => 18,
-            CF_PRIVATEFIRST => 19,
-            CF_PRIVATELAST => 20,
-            CF_RIFF => 21,
-            CF_TIFF => 22,
-            CF_TEXT => 23,
-            CF_SYLK => 24,
-            CF_UNICODETEXT => 25,
-            CF_WAVE => 26,
-            EMPTY => 27,
-            _ => panic!("Unsupported format"),
+        match *self {
+            CLIPBOARDFORMATS::BITMAP(_) => {0}
+            CLIPBOARDFORMATS::DIB(_) => {1}
+            CLIPBOARDFORMATS::DIBV5(_) => {2}
+            CLIPBOARDFORMATS::DIF() => {3}
+            CLIPBOARDFORMATS::DSPBITMAP() => {4}
+            CLIPBOARDFORMATS::DSPENHMETAFILE() => {5}
+            CLIPBOARDFORMATS::DSPMETAFILEPICT() => {6}
+            CLIPBOARDFORMATS::DSPTEXT() => {7}
+            CLIPBOARDFORMATS::ENHMETAFILE() => {8}
+            CLIPBOARDFORMATS::GDIOBJFIRST() => {9}
+            CLIPBOARDFORMATS::GDIOBJLAST() => {10}
+            CLIPBOARDFORMATS::HDROP() => {11}
+            CLIPBOARDFORMATS::LOCALE() => {12}
+            CLIPBOARDFORMATS::MAX() => {13}
+            CLIPBOARDFORMATS::METAFILEPICT() => {14}
+            CLIPBOARDFORMATS::OEMTEXT(_) => {15}
+            CLIPBOARDFORMATS::OWNERDISPLAY() => {16}
+            CLIPBOARDFORMATS::PALETTE() => {17}
+            CLIPBOARDFORMATS::PENDATA() => {18}
+            CLIPBOARDFORMATS::PRIVATEFIRST() => {19}
+            CLIPBOARDFORMATS::PRIVATELAST() => {20}
+            CLIPBOARDFORMATS::RIFF() => {21}
+            CLIPBOARDFORMATS::TIFF() => {22}
+            CLIPBOARDFORMATS::TEXT(_) => {23}
+            CLIPBOARDFORMATS::SYLK() => {24}
+            CLIPBOARDFORMATS::UNICODETEXT(_) => {25}
+            CLIPBOARDFORMATS::WAVE() => {26}
+            CLIPBOARDFORMATS::HTML(_) => {27}
+            CLIPBOARDFORMATS::EMPTY => {28}
         }
     }
 }

@@ -14,9 +14,7 @@ pub fn isProcessRunning(name: &str) -> bool {
     unsafe {
         if tlhelp32::Process32First(snapshot, &mut entry) == minwindef::TRUE {
             while tlhelp32::Process32Next(snapshot, &mut entry) != 0 {
-                let u8_cast = unsafe {
-                    &*(getNameSlice(&entry.szExeFile).unwrap() as *const [i8] as *const [u8])
-                };
+                let u8_cast = &*(getNameSlice(&entry.szExeFile).unwrap() as *const [i8] as *const [u8]);
                 if name.as_bytes() == u8_cast {
                     return true;
                 }
