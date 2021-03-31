@@ -1,12 +1,12 @@
 #[allow(non_snake_case)]
 use winapi::{
-    shared::windef,
+    shared::{minwindef, windef},
     um::{winbase, wingdi, winnt, winuser},
 };
 
 #[allow(non_snake_case)]
 enum CLIPBOARDFORMATS {
-    BITMAP(winnt::HANDLE),
+    BITMAP(wingdi::BITMAP, Vec<u8>),
     DIB(wingdi::BITMAPINFO),
     DIBV5(wingdi::BITMAPV5HEADER),
     DIF(),
@@ -42,51 +42,48 @@ impl CLIPBOARDFORMATS {
     //Get number behind enum, it will be used later for saving clipboards data in file
     pub fn getID(&self) -> u32 {
         match *self {
-            CLIPBOARDFORMATS::BITMAP(_) => {0}
-            CLIPBOARDFORMATS::DIB(_) => {1}
-            CLIPBOARDFORMATS::DIBV5(_) => {2}
-            CLIPBOARDFORMATS::DIF() => {3}
-            CLIPBOARDFORMATS::DSPBITMAP() => {4}
-            CLIPBOARDFORMATS::DSPENHMETAFILE() => {5}
-            CLIPBOARDFORMATS::DSPMETAFILEPICT() => {6}
-            CLIPBOARDFORMATS::DSPTEXT() => {7}
-            CLIPBOARDFORMATS::ENHMETAFILE() => {8}
-            CLIPBOARDFORMATS::GDIOBJFIRST() => {9}
-            CLIPBOARDFORMATS::GDIOBJLAST() => {10}
-            CLIPBOARDFORMATS::HDROP() => {11}
-            CLIPBOARDFORMATS::LOCALE() => {12}
-            CLIPBOARDFORMATS::MAX() => {13}
-            CLIPBOARDFORMATS::METAFILEPICT() => {14}
-            CLIPBOARDFORMATS::OEMTEXT(_) => {15}
-            CLIPBOARDFORMATS::OWNERDISPLAY() => {16}
-            CLIPBOARDFORMATS::PALETTE() => {17}
-            CLIPBOARDFORMATS::PENDATA() => {18}
-            CLIPBOARDFORMATS::PRIVATEFIRST() => {19}
-            CLIPBOARDFORMATS::PRIVATELAST() => {20}
-            CLIPBOARDFORMATS::RIFF() => {21}
-            CLIPBOARDFORMATS::TIFF() => {22}
-            CLIPBOARDFORMATS::TEXT(_) => {23}
-            CLIPBOARDFORMATS::SYLK() => {24}
-            CLIPBOARDFORMATS::UNICODETEXT(_) => {25}
-            CLIPBOARDFORMATS::WAVE() => {26}
-            CLIPBOARDFORMATS::HTML(_) => {27}
-            CLIPBOARDFORMATS::EMPTY => {28}
+            CLIPBOARDFORMATS::BITMAP(_, _) => 0,
+            CLIPBOARDFORMATS::DIB(_) => 1,
+            CLIPBOARDFORMATS::DIBV5(_) => 2,
+            CLIPBOARDFORMATS::DIF() => 3,
+            CLIPBOARDFORMATS::DSPBITMAP() => 4,
+            CLIPBOARDFORMATS::DSPENHMETAFILE() => 5,
+            CLIPBOARDFORMATS::DSPMETAFILEPICT() => 6,
+            CLIPBOARDFORMATS::DSPTEXT() => 7,
+            CLIPBOARDFORMATS::ENHMETAFILE() => 8,
+            CLIPBOARDFORMATS::GDIOBJFIRST() => 9,
+            CLIPBOARDFORMATS::GDIOBJLAST() => 10,
+            CLIPBOARDFORMATS::HDROP() => 11,
+            CLIPBOARDFORMATS::LOCALE() => 12,
+            CLIPBOARDFORMATS::MAX() => 13,
+            CLIPBOARDFORMATS::METAFILEPICT() => 14,
+            CLIPBOARDFORMATS::OEMTEXT(_) => 15,
+            CLIPBOARDFORMATS::OWNERDISPLAY() => 16,
+            CLIPBOARDFORMATS::PALETTE() => 17,
+            CLIPBOARDFORMATS::PENDATA() => 18,
+            CLIPBOARDFORMATS::PRIVATEFIRST() => 19,
+            CLIPBOARDFORMATS::PRIVATELAST() => 20,
+            CLIPBOARDFORMATS::RIFF() => 21,
+            CLIPBOARDFORMATS::TIFF() => 22,
+            CLIPBOARDFORMATS::TEXT(_) => 23,
+            CLIPBOARDFORMATS::SYLK() => 24,
+            CLIPBOARDFORMATS::UNICODETEXT(_) => 25,
+            CLIPBOARDFORMATS::WAVE() => 26,
+            CLIPBOARDFORMATS::HTML(_) => 27,
+            CLIPBOARDFORMATS::EMPTY => 28,
         }
     }
 }
 
 struct ClipboardEntity {
-    format: Vec<CLIPBOARDFORMATS>,
+    format: CLIPBOARDFORMATS,
 }
 
 impl ClipboardEntity {
-    pub fn with_capacity(capacity: usize) -> Self {
-        ClipboardEntity {
-            format: Vec::with_capacity(capacity),
-        }
-    }
     pub fn new() -> Self {
-        ClipboardEntity { format: Vec::new() }
+        ClipboardEntity {
+            format: CLIPBOARDFORMATS::EMPTY,
+        }
     }
 }
 
@@ -158,122 +155,60 @@ impl ClipboardHandler {
         self.data.push(Vec::new());
         // to check which clipboard
         // this is the only existing vector
-        self.getCurrentFormat().format = Vec::new();
         for i in 0..amountOfFormats {
             currentFormat = unsafe { winuser::EnumClipboardFormats(currentFormat) };
-            self.parseData(currentFormat, i as usize);
+            self.parseData(currentFormat);
+            if let CLIPBOARDFORMATS::EMPTY = self.getCurrentFormat().format {
+                continue;
+            }
+            break;
         }
         unsafe { winuser::CloseClipboard() };
     }
-    fn retrieveClipboardDataAs<T>(&self, format: u32) -> *mut T {
-        unsafe { winuser::GetClipboardData(format) as *mut T }
+    // implement for each type script running
+    fn runScript(&mut self) -> bool {
+        match self.getCurrentFormat().format {
+            _ => return false,
+        }
     }
 
-    // implement for each type script running
-    fn runScript(&self, format: usize) {}
-
-    fn parseData(&mut self, formatID: u32, formatIndex: usize) {
+    fn parseData(&mut self, formatID: u32) {
         use winuser::*;
-        let globalPointer: winnt::HANDLE;
-        //let mut format = &mut self.getCurrentFormat().format[formatIndex];
         match formatID {
             CF_BITMAP => {
-                self.getCurrentFormat().format[formatIndex] = unsafe {CLIPBOARDFORMATS::BITMAP(*self.retrieveClipboardDataAs::<winnt::HANDLE>(formatID))};
-                if let CLIPBOARDFORMATS::BITMAP(data) = CLIPBOARDFORMATS::BITMAP(unsafe {
-                    *self.retrieveClipboardDataAs::<winnt::HANDLE>(formatID)
-                }) {
-                    self.getCurrentFormat().format[formatIndex] = CLIPBOARDFORMATS::BITMAP(data);
-                    self.runScript(formatIndex);
-                    // TODO:
-                    // get size from former clipboard
-                    let mut size: u32 = 0;
-                    match self.getCurrentFormat().format[0] {
-                        CLIPBOARDFORMATS::DIB(data) => {
-                            let bmi = data.bmiHeader;
-                            let compresion = bmi.biCompression;
-                            match compresion {
-                                wingdi::BI_JPEG | wingdi::BI_PNG => {
-                                    size = bmi.biSizeImage;
-                                }
-                                wingdi::BI_BITFIELDS | wingdi::BI_RGB => {
-                                    let width = bmi.biWidth;
-                                    let height = bmi.biHeight;
-                                    size = (width * height * 3) as u32;
-                                }
-                                _ => {
-                                    let width = bmi.biWidth;
-                                    let mut height = bmi.biHeight;
-                                    size = 0;
-                                    if height < 0 {
-                                        height = -height;
-                                    }
-                                    let bitCount = bmi.biBitCount;
-                                    size = (width * height * bitCount as i32) as u32;
-                                }
-                            }
-                        }
-                        CLIPBOARDFORMATS::DIBV5(data) => {}
-                        _ => unimplemented!(),
+                unsafe{winuser::GetClipboardData(formatID)};
+                let a = unsafe{winuser::GetClipboardData(formatID) as *mut wingdi::BITMAP};
+                let tempBitmap: wingdi::BITMAP = 
+                    unsafe { *std::mem::transmute::<_, &wingdi::BITMAP>(winuser::GetClipboardData(formatID)) };
+                let tempSizeOfPointer =
+                    (tempBitmap.bmHeight * tempBitmap.bmWidth * tempBitmap.bmBitsPixel as i32)
+                        as usize;
+                let tempPointer: &[u8] = unsafe {
+                    std::slice::from_raw_parts(tempBitmap.bmBits as *mut u8, tempSizeOfPointer)
+                };
+                let mut tempVec: Vec<u8> = Vec::new();
+                tempVec.extend_from_slice(tempPointer);
+                let mut finalBitmap = tempBitmap;
+                finalBitmap.bmBits = tempVec.as_mut_ptr() as *mut core::ffi::c_void;
+                self.getCurrentFormat().format = CLIPBOARDFORMATS::BITMAP(finalBitmap, tempVec);
+
+                if self.runScript() {
+                    let memPointer = unsafe {
+                        winbase::GlobalAlloc(winbase::GHND, std::mem::size_of::<wingdi::BITMAP>())
+                    };
+                    let lockedMem = unsafe { winbase::GlobalLock(memPointer) };
+                    if let CLIPBOARDFORMATS::BITMAP(data, _pointer) =
+                        &self.getCurrentFormat().format
+                    {
+                        unsafe { std::ptr::copy(&data, lockedMem as *mut &wingdi::BITMAP, 1) };
                     }
-                    globalPointer = unsafe {
-                        winbase::GlobalAlloc(winbase::GHND, std::mem::size_of::<winnt::HANDLE>())
-                    };
-                    let memPointer: *mut winnt::VOID =
-                        unsafe { winbase::GlobalLock(globalPointer) };
-                    unsafe { std::ptr::copy(data, memPointer as winnt::HANDLE, size as usize) }
-                    unsafe { winbase::GlobalUnlock(globalPointer) };
-                    //globalPointer
+                    unsafe { winbase::GlobalUnlock(memPointer) };
+                    unsafe { winuser::EmptyClipboard() };
+                    unsafe { winuser::SetClipboardData(formatID, memPointer) };
                 }
             }
-            CF_DIB => {
-                if let CLIPBOARDFORMATS::DIB(mut data) = CLIPBOARDFORMATS::DIB(unsafe {
-                    *self.retrieveClipboardDataAs::<wingdi::BITMAPINFO>(formatID)
-                }) {
-                    self.getCurrentFormat().format[formatIndex] = CLIPBOARDFORMATS::DIB(data);
-                    self.runScript(formatIndex);
-                    globalPointer = unsafe {
-                        winbase::GlobalAlloc(
-                            winbase::GHND,
-                            std::mem::size_of::<wingdi::BITMAPINFO>(),
-                        )
-                    };
-                    let memPointer: *mut winnt::VOID =
-                        unsafe { winbase::GlobalLock(globalPointer) };
-                    unsafe { std::ptr::copy(&mut data, memPointer as *mut wingdi::BITMAPINFO, 1) }
-                    unsafe { winbase::GlobalUnlock(globalPointer) };
-                    //globalPointer
-                }
-            }
-            CF_DIBV5 => {
-                if let CLIPBOARDFORMATS::DIBV5(mut data) = CLIPBOARDFORMATS::DIBV5(unsafe {
-                    *self.retrieveClipboardDataAs::<wingdi::BITMAPV5HEADER>(formatID)
-                }) {
-                    self.getCurrentFormat().format[formatIndex] = CLIPBOARDFORMATS::DIBV5(data);
-                    self.runScript(formatIndex);
-                    globalPointer = unsafe {
-                        winbase::GlobalAlloc(
-                            winbase::GHND,
-                            std::mem::size_of::<wingdi::BITMAPINFO>(),
-                        )
-                    };
-                    let memPointer: *mut winnt::VOID =
-                        unsafe { winbase::GlobalLock(globalPointer) };
-                    unsafe {
-                        std::ptr::copy(&mut data, memPointer as *mut wingdi::BITMAPV5HEADER, 1)
-                    }
-                    unsafe { winbase::GlobalUnlock(globalPointer) };
-                    //globalPointer
-                }
-            }
-            CF_DIF => {}
-            CF_DSPBITMAP => {}
-            CF_DSPENHMETAFILE => {}
-            CF_DSPMETAFILEPICT => {}
-            CF_DSPTEXT => {}
-            CF_ENHMETAFILE => {}
-            CF_GDIOBJFIRST => {}
-            CF_GDIOBJLAST => {}
-            CF_HDROP => {}
+            CF_DIB => {}
+            CF_DIBV5 => {}
             CF_LOCALE => {}
             CF_MAX => {}
             CF_METAFILEPICT => {}
