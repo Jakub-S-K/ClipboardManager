@@ -1,7 +1,9 @@
+use widestring::U16CString;
 #[allow(non_snake_case)]
+use widestring::WideCString;
 use winapi::{
     shared::{minwindef, windef},
-    um::{winbase, wingdi, winnt, winuser},
+    um::{errhandlingapi, winbase, wingdi, winnt, winuser},
 };
 
 #[allow(non_snake_case)]
@@ -21,7 +23,7 @@ enum CLIPBOARDFORMATS {
     LOCALE(),
     MAX(),
     METAFILEPICT(),
-    OEMTEXT(std::ffi::CString),
+    OEMTEXT(String),
     OWNERDISPLAY(),
     PALETTE(),
     PENDATA(),
@@ -29,11 +31,10 @@ enum CLIPBOARDFORMATS {
     PRIVATELAST(),
     RIFF(),
     TIFF(),
-    TEXT(std::ffi::CString),
+    TEXT(String),
     SYLK(),
-    UNICODETEXT(std::ffi::CString),
+    UNICODETEXT(String),
     WAVE(),
-    HTML(std::ffi::CString),
     EMPTY,
 }
 
@@ -69,8 +70,7 @@ impl CLIPBOARDFORMATS {
             CLIPBOARDFORMATS::SYLK() => 24,
             CLIPBOARDFORMATS::UNICODETEXT(_) => 25,
             CLIPBOARDFORMATS::WAVE() => 26,
-            CLIPBOARDFORMATS::HTML(_) => 27,
-            CLIPBOARDFORMATS::EMPTY => 28,
+            CLIPBOARDFORMATS::EMPTY => 27,
         }
     }
 }
@@ -148,14 +148,15 @@ impl ClipboardHandler {
     }
     pub fn update(&mut self) {
         println!("update Function");
-        unsafe { winuser::OpenClipboard(self.hwnd) };
         let amountOfFormats = unsafe { winuser::CountClipboardFormats() };
         let mut currentFormat = 0;
         // to register history, get current clipboard in usage
         self.data.push(Vec::new());
         // to check which clipboard
         // this is the only existing vector
-        for i in 0..amountOfFormats {
+
+        unsafe { winuser::OpenClipboard(self.hwnd) };
+        for _i in 0..amountOfFormats {
             currentFormat = unsafe { winuser::EnumClipboardFormats(currentFormat) };
             self.parseData(currentFormat);
             if let CLIPBOARDFORMATS::EMPTY = self.getCurrentFormat().format {
@@ -163,7 +164,6 @@ impl ClipboardHandler {
             }
             break;
         }
-        unsafe { winuser::CloseClipboard() };
     }
     // implement for each type script running
     fn runScript(&mut self) -> bool {
@@ -176,10 +176,12 @@ impl ClipboardHandler {
         use winuser::*;
         match formatID {
             CF_BITMAP => {
-                unsafe{winuser::GetClipboardData(formatID)};
-                let a = unsafe{winuser::GetClipboardData(formatID) as *mut wingdi::BITMAP};
-                let tempBitmap: wingdi::BITMAP = 
-                    unsafe { *std::mem::transmute::<_, &wingdi::BITMAP>(winuser::GetClipboardData(formatID)) };
+                let a = unsafe { winuser::GetClipboardData(formatID) as *mut wingdi::BITMAP };
+                println!("{}", unsafe { errhandlingapi::GetLastError() });
+                let dupa = unsafe { *a }.bmBitsPixel;
+                let tempBitmap: wingdi::BITMAP = unsafe {
+                    *std::mem::transmute::<_, &wingdi::BITMAP>(winuser::GetClipboardData(formatID))
+                };
                 let tempSizeOfPointer =
                     (tempBitmap.bmHeight * tempBitmap.bmWidth * tempBitmap.bmBitsPixel as i32)
                         as usize;
@@ -191,7 +193,7 @@ impl ClipboardHandler {
                 let mut finalBitmap = tempBitmap;
                 finalBitmap.bmBits = tempVec.as_mut_ptr() as *mut core::ffi::c_void;
                 self.getCurrentFormat().format = CLIPBOARDFORMATS::BITMAP(finalBitmap, tempVec);
-
+                // check for avaliable CF_DIB or CF_DIBV5
                 if self.runScript() {
                     let memPointer = unsafe {
                         winbase::GlobalAlloc(winbase::GHND, std::mem::size_of::<wingdi::BITMAP>())
@@ -205,14 +207,49 @@ impl ClipboardHandler {
                     unsafe { winbase::GlobalUnlock(memPointer) };
                     unsafe { winuser::EmptyClipboard() };
                     unsafe { winuser::SetClipboardData(formatID, memPointer) };
+                    unsafe { winuser::CloseClipboard() };
                 }
             }
-            CF_DIB => {}
-            CF_DIBV5 => {}
+            CF_DIB => {
+                // check for avaliable CF_BITMAP
+            }
+            CF_DIBV5 => {
+                // check for avaliable CF_BITMAP
+            }
             CF_LOCALE => {}
             CF_MAX => {}
             CF_METAFILEPICT => {}
-            CF_OEMTEXT => {}
+            CF_OEMTEXT => {
+                let tempText =
+                    unsafe { winuser::GetClipboardData(formatID) as *mut std::os::raw::c_char };
+                let data = unsafe {
+                    std::ffi::CStr::from_ptr(tempText)
+                        .to_string_lossy()
+                        .into_owned()
+                };
+                self.getCurrentFormat().format = CLIPBOARDFORMATS::OEMTEXT(data);
+                // run script and make it into global mem
+                //if self.runScript()
+                {
+                    if let CLIPBOARDFORMATS::OEMTEXT(data) = &self.getCurrentFormat().format {
+                        let memSize: usize = data.len();
+                        let memPointer = unsafe { winbase::GlobalAlloc(winbase::GHND, memSize) };
+                        let lockedMem = unsafe { winbase::GlobalLock(memPointer) };
+                        unsafe {
+                            std::ptr::copy_nonoverlapping(
+                                data.as_ptr(),
+                                lockedMem as *mut u8,
+                                memSize,
+                            )
+                        };
+                        unsafe { winbase::GlobalUnlock(memPointer) };
+
+                        unsafe { winuser::EmptyClipboard() };
+                        unsafe { winuser::SetClipboardData(CF_TEXT, memPointer) };
+                        unsafe { winuser::CloseClipboard() };
+                    }
+                }
+            }
             CF_OWNERDISPLAY => {}
             CF_PALETTE => {}
             CF_PENDATA => {}
@@ -220,9 +257,66 @@ impl ClipboardHandler {
             CF_PRIVATELAST => {}
             CF_RIFF => {}
             CF_TIFF => {}
-            CF_TEXT => {}
+            CF_TEXT => {
+                let tempText =
+                    unsafe { winuser::GetClipboardData(formatID) as *mut std::os::raw::c_char };
+                let data = unsafe {
+                    std::ffi::CStr::from_ptr(tempText)
+                        .to_string_lossy()
+                        .into_owned()
+                };
+                self.getCurrentFormat().format = CLIPBOARDFORMATS::TEXT(data);
+                //if self.runScript()
+                {
+                    if let CLIPBOARDFORMATS::TEXT(data) = &self.getCurrentFormat().format {
+                        let memSize: usize = data.len();
+                        let memPointer = unsafe { winbase::GlobalAlloc(winbase::GHND, memSize) };
+                        let lockedMem = unsafe { winbase::GlobalLock(memPointer) };
+                        unsafe {
+                            std::ptr::copy_nonoverlapping(
+                                data.as_ptr(),
+                                lockedMem as *mut u8,
+                                memSize,
+                            )
+                        };
+                        unsafe { winbase::GlobalUnlock(memPointer) };
+
+                        unsafe { winuser::EmptyClipboard() };
+                        unsafe { winuser::SetClipboardData(CF_TEXT, memPointer) };
+                        unsafe { winuser::CloseClipboard() };
+                    }
+                }
+                // run script and make it into global mem
+            }
             CF_SYLK => {}
-            CF_UNICODETEXT => {}
+            CF_UNICODETEXT => {
+                let data = unsafe {
+                    U16CString::from_raw(winuser::GetClipboardData(formatID) as *mut u16)
+                };
+                self.getCurrentFormat().format =
+                    CLIPBOARDFORMATS::UNICODETEXT(data.to_string().unwrap());
+                // run script and make it into global mem
+                //if self.runScript()
+                {
+                    if let CLIPBOARDFORMATS::UNICODETEXT(data) = &self.getCurrentFormat().format {
+                        let memSize: usize = data.len();
+                        let memPointer = unsafe { winbase::GlobalAlloc(winbase::GHND, memSize) };
+                        let lockedMem = unsafe { winbase::GlobalLock(memPointer) };
+                        unsafe {
+                            std::ptr::copy_nonoverlapping(
+                                data.as_ptr(),
+                                lockedMem as *mut u8,
+                                memSize,
+                            )
+                        };
+                        unsafe { winbase::GlobalUnlock(memPointer) };
+
+                        unsafe { winuser::EmptyClipboard() };
+                        unsafe { winuser::SetClipboardData(CF_TEXT, memPointer) };
+                        unsafe { winuser::CloseClipboard() };
+                    }
+                }
+            }
             CF_WAVE => {}
             EMPTY => {}
             _ => unimplemented!("This format is not supported"),
