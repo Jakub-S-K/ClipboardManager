@@ -91,14 +91,13 @@
         $window.scroll(function() {
             $stickyEl.toggleClass('sticky', $window.scrollTop() > elTop);
         });
-
     </script>
 </head>
 
 <body>
     <div class="container">
-        <div #upperBox>
-            <button #close>X</button>
+        <div #upperBox>           <!--Zamykanie okna X-->
+            <button #close onclick="view.closeWindow()">X</button>
             <div id="rustHOHO">
                 <button #rust>Przycisk</button>
             </div>
