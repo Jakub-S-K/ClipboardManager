@@ -38,6 +38,10 @@ impl EventHandler {
 
         api
     }
+    fn closeWindow(&mut self) -> sciter::Value
+    {
+        sciter::Value::from("zamykanie okna tu bedzie")
+    }
 }
 
 impl sciter::EventHandler for EventHandler {
@@ -56,5 +60,6 @@ impl sciter::EventHandler for EventHandler {
         fn add();
         fn isInspectorAlive();
         fn getClipbaordApi();
+        fn closeWindow();
     }
 }
