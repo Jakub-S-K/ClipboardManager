@@ -176,6 +176,16 @@ impl ClipboardHandler {
         use winuser::*;
         match formatID {
             CF_BITMAP => {
+                if unsafe { winuser::IsClipboardFormatAvailable(CF_DIB) } != 0 {
+                    let data =
+                        unsafe { *(winuser::GetClipboardData(CF_DIB) as *mut wingdi::BITMAPINFO) };
+                    self.processBITMAPINFO(&data.bmiHeader);
+
+                    data.bmiHeader.biWidth;
+                } else if unsafe { winuser::IsClipboardFormatAvailable(CF_DIBV5) } != 0 {
+                } else {
+                    panic!("Chuj, nie dziala");
+                }
                 let a = unsafe { winuser::GetClipboardData(formatID) as *mut wingdi::BITMAP };
                 println!("{}", unsafe { errhandlingapi::GetLastError() });
                 let dupa = unsafe { *a }.bmBitsPixel;
@@ -320,6 +330,39 @@ impl ClipboardHandler {
             CF_WAVE => {}
             EMPTY => {}
             _ => unimplemented!("This format is not supported"),
+        }
+    }
+
+    fn processBITMAPINFO(&mut self, data: &wingdi::BITMAPINFOHEADER) -> usize {
+        match data.biCompression {
+            wingdi::BI_RGB => self.processBitAmountSub(
+                (data.biWidth * i32::abs(data.biHeight)) as f32
+                    * ((data.biBitCount as f32) * 0.125),
+            ),
+            wingdi::BI_RLE8 => {0}
+            wingdi::BI_RLE4 => {0}
+            wingdi::BI_BITFIELDS => self.processBitAmountSub(
+                (data.biWidth * i32::abs(data.biHeight)) as f32
+                    * ((data.biBitCount as f32) * 0.125),
+            ),
+            wingdi::BI_JPEG => data.biSizeImage as usize,
+            wingdi::BI_PNG => data.biSizeImage as usize,
+            _ => panic!("I shouldn't be here"),
+        }
+    }
+    fn processBitAmountSub(&self, bytes: f32) -> usize {
+        if bytes - ((bytes as i32) as f32) < 1.0 {
+            (bytes + 1.0) as usize
+        } else {
+            bytes as usize
+        }
+    }
+    fn processBitAmountMod(&self, bytes: i32) -> f32 {
+        let modVal = bytes % 8;
+        if modVal != 0 {
+            (bytes + (8 - modVal)) as f32
+        } else {
+            bytes as f32
         }
     }
 

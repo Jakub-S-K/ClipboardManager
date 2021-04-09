@@ -4,6 +4,7 @@ extern crate sciter;
 
 use std::ptr::null_mut;
 
+#[allow(non_snake_case)]
 mod WinapiProcesses;
 
 #[allow(non_snake_case)]
@@ -13,9 +14,10 @@ use Event::*;
 mod Winapi;
 use Winapi::*;
 
-mod Clipboard;
 #[allow(non_snake_case)]
+mod Clipboard;
 
+#[allow(non_upper_case_globals)]
 static archive: &[u8] = include_bytes!("../dupa.rc");
 
 #[allow(non_snake_case)]
