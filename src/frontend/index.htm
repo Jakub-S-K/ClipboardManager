@@ -14,32 +14,42 @@
             height: 100%;
             width: 100%;
             margin: 0px;
+            display:grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: 2fr 7fr 1fr;
+            grid-template-areas: 
+            "upper"
+            "mid"
+            "bot";
+            overflow:hidden;
         }
 
         #upperBox {
             text-align: center;
             justify-content: center;
             height: 13vh;
-            position: absolute;
             left:0;
             top:0;
             overflow:hidden;
-            display: block;
+            grid-area: upper;
         }
         
         #midBox {
             padding-left: 10%;
             padding-top: 2%;
             justify-content: left;
-            height: 70%;
-            top:13%;
+            max-height:100%;
+            top:0%;
             width:100%;
             background-color: rgba(226, 186, 186, 0.5);
             position: relative;
             overflow-y:auto;
-            display: block;
+            grid-area: mid;
         }
-
+        #testowy
+        {
+            height:3000px;
+        }
         hr {
             border: 1px solid rgb(255, 115, 0);
             width: 85%;
@@ -56,16 +66,22 @@
             color: rgba(255, 115, 0, 0.562);
             text-align: right;
             padding-right: 3%;
-            top:83%;
+            top:0;
             font-style: italic;
             position: relative;
             overflow: hidden;
-            display: block;
+            grid-area: bot;
         }
         #close
         {
+            background: rgb(187, 0, 0);
+            color:black;
+            float: right;
+            width:15%;
+            font-size:15px;
+        }
+        #close:hover{
             background-color: red;
-            right: 3%;
         }
     </style>
     <script type="text/tiscript">
@@ -90,20 +106,23 @@
             $(div#midBox).$append(<h1#takCzemuPytasz>{view.add()}</h1><hr />);
         }
         
-        var $window = $(window),
-        $stickyEl = $('#upperBox'),
-        elTop = $stickyEl.offset().top;
- 
-        $window.scroll(function() {
-            $stickyEl.toggleClass('sticky', $window.scrollTop() > elTop);
+        $(button#close).on("click", function() {
+            view.close();
         });
+        
+        var fixed = document.getElementById('upperBox');
+
+        fixed.addEventListener('touchmove', function(e) 
+        {
+            e.preventDefault();
+        }, false);
     </script>
 </head>
 
 <body>
     <div class="container">
         <div #upperBox>           <!--Zamykanie okna X-->
-            <button #close onclick="view.closeWindow()">X</button>
+            <button #close>X</button>
             <hr>JD<hr>
             <div id="rustHOHO">
                 <button #rust>Przycisk</button>
@@ -111,7 +130,9 @@
         </div>
         <hr>
         <div id="midBox">
-            <button #nacisk>Nacis</button>
+            <div #testowy>
+                <button #nacisk>Nacis</button>
+            </div>
         </div>
         <hr>
         <div id="footer">
