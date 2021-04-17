@@ -22,10 +22,10 @@
 		},
 		{
 			"type": "cargo",
-			"subcommand": "run",
 			"problemMatcher": [
 				"$rustc"
 			],
+			"command": "run",
 			"label": "Rust: cargo run",
 			"group": {
 				"kind": "build",
