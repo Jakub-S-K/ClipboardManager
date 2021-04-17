@@ -25,6 +25,7 @@
 			"problemMatcher": [
 				"$rustc"
 			],
+			"subcommand" : "run",
 			"command": "run",
 			"label": "Rust: cargo run",
 			"group": {
