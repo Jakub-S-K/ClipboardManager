@@ -33,8 +33,19 @@
             left:0;
             top:0;
             grid-area: upper;
+            margin:-1px;
         }
-        
+        #menu
+        {
+            width:10px;
+            height:20px;
+            float:left;
+            background:whitesmoke;
+        }
+        #menu:hover
+        {
+            background:white;
+        }
         #midBox {
             padding-left: 10%;
             padding-top: 2%;
@@ -45,17 +56,26 @@
             background-color: rgba(226, 186, 186, 0.5);
             grid-area: mid;
             overflow-y:auto;
+            overscroll-behavior: none;
         }
         hr {
             border: 1px solid rgb(255, 115, 0);
             width: 85%;
             margin-left: 7.5%;
         }
-
         #nacisk {
-            background-color: sandybrown;
+            background: sandybrown;
             color: rgb(192, 32, 32);
             width: 40%;
+            float:right;
+        }
+        #nacisk:hover
+        {
+            background-color:rgb(253, 190, 135);
+        }
+        #rust
+        {
+            float:left;    
         }
 
         #footer {
@@ -98,19 +118,13 @@
         
         function dupa()
         {
-            $(div#midBox).$append(<h1#takCzemuPytasz>{view.add()}</h1><hr />);
+            $(div#midBox).$append(<h1#takCzemuPytasz>{view.add()-2}</h1><hr />);
         }
         
         $(button#close).on("click", function() {
             view.close();
         });
         
-        var fixed = document.getElementById('upperBox');
-
-        fixed.addEventListener('touchmove', function(e) 
-        {
-            e.preventDefault();
-        }, false);
     </script>
 </head>
 
@@ -120,12 +134,13 @@
             <button #close>X</button>
             Gdzie nocą tupta jeż?
             <div id="rustHOHO">
-                <button #rust>Przycisk</button>
+                <button #rust>Rust action</button>
+                <button #nacisk>New Item</button>
+                <button #menu></button>
             </div>
         </div>
         <hr>
         <div #midBox>
-                <button #nacisk>Nacis</button>
         </div>
         <hr>
         <div id="footer">
